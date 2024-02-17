@@ -17,23 +17,22 @@ import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
 
 // ** Store Imports
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 // ** Custom Components Imports
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Types Imports
-import { RootState, AppDispatch } from 'src/store'
+import { RootState } from 'src/store'
 import { ThemeColor } from 'src/@core/layouts/types'
 
 // ** Custom Table Components Imports
 import TableHeader from 'src/views/dashboards/shipments/filter/TableHeader'
 
-import { connectToServer } from 'src/libs/socket.io'
+// import { connectToServer } from 'src/libs/socket.io'
 
-import { CoreData, ResponseShipment, fetchData, filterData } from 'src/store/apps/shipments'
+import { CoreData, ResponseShipment } from 'src/store/apps/shipments'
 import { fileExporter } from 'src/libs/xlsx/xlsx'
-import { useDebounce } from 'src/hooks/useDebounce'
 
 // ** Imports Highcharts
 import Highcharts from 'highcharts'
@@ -345,12 +344,13 @@ const ShipmentsDashboard = () => {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [chartOptions, setChartOptions] = useState<object>({})
   const apiRef = useGridApiRef()
-  const debouncedValue = useDebounce(value)
+
+  // const debouncedValue = useDebounce(value)
 
   // ** Hooks
-  const dispatch = useDispatch<AppDispatch>()
+  // const dispatch = useDispatch<AppDispatch>()
   const store = useSelector((state: RootState) => state.shipment)
-  const [rowCountState, setRowCountState] = useState(store.total || 0)
+  const [rowCountState] = useState(store.total || 0)
 
   // useEffect(() => {
   //   setRowCountState(prevRowCountState => (store.total !== undefined ? store.total : prevRowCountState))
@@ -438,6 +438,7 @@ const ShipmentsDashboard = () => {
         if (!response.ok) {
           throw new Error('Network response was not ok')
         }
+
         return response.json()
       })
       .then(data => {

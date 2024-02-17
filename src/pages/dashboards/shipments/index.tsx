@@ -1,53 +1,56 @@
 // ** React Imports
-import { MouseEvent, useState, useEffect, useCallback } from 'react';
+import { MouseEvent, useState, useEffect, useCallback } from 'react'
 
 // ** MUI Imports
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Grid from '@mui/material/Grid';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import CardHeader from '@mui/material/CardHeader';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import CardContent from '@mui/material/CardContent';
-import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import Grid from '@mui/material/Grid'
+import Divider from '@mui/material/Divider'
+import MenuItem from '@mui/material/MenuItem'
+import Typography from '@mui/material/Typography'
+import CardHeader from '@mui/material/CardHeader'
+import InputLabel from '@mui/material/InputLabel'
+import FormControl from '@mui/material/FormControl'
+import CardContent from '@mui/material/CardContent'
+import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid'
+import Select, { SelectChangeEvent } from '@mui/material/Select'
 
 // ** Store Imports
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux'
 
 // ** Custom Components Imports
-import CustomChip from 'src/@core/components/mui/chip';
+import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Types Imports
-import { RootState, AppDispatch } from 'src/store';
-import { ThemeColor } from 'src/@core/layouts/types';
+import { RootState, AppDispatch } from 'src/store'
+import { ThemeColor } from 'src/@core/layouts/types'
 
 // ** Custom Table Components Imports
-import TableHeader from 'src/views/dashboards/shipments/filter/TableHeader';
+import TableHeader from 'src/views/dashboards/shipments/filter/TableHeader'
 
-import { connectToServer } from 'src/libs/socket.io';
+import { connectToServer } from 'src/libs/socket.io'
 
-import { CoreData, ResponseShipment, fetchData, filterData } from 'src/store/apps/shipments';
-import { fileExporter } from 'src/libs/xlsx/xlsx';
-import { useDebounce } from 'src/hooks/useDebounce';
+import { CoreData, ResponseShipment, fetchData, filterData } from 'src/store/apps/shipments'
+import { fileExporter } from 'src/libs/xlsx/xlsx'
+import { useDebounce } from 'src/hooks/useDebounce'
 
+// ** Imports Highcharts
+import Highcharts from 'highcharts'
+import HighchartsReact from 'highcharts-react-official'
 
 interface UserStatusType {
-  [key: string]: ThemeColor;
+  [key: string]: ThemeColor
 }
 
 interface CellType {
-  row: ResponseShipment;
+  row: ResponseShipment
 }
 
 const userStatusObj: UserStatusType = {
   residential: 'success',
   business: 'secondary'
-};
+}
 
 const columns: GridColDef[] = [
   {
@@ -64,7 +67,7 @@ const columns: GridColDef[] = [
             {`${row.coreData.id}`}
           </Typography>
         </Box>
-      );
+      )
     }
   },
   {
@@ -81,7 +84,7 @@ const columns: GridColDef[] = [
             {`${row.coreData.order}`}
           </Typography>
         </Box>
-      );
+      )
     }
   },
   {
@@ -92,32 +95,35 @@ const columns: GridColDef[] = [
     headerName: 'Destino',
     renderCell: ({ row }: CellType) => {
       return (
-        <Typography sx={{
+        <Typography
+          sx={{
             display: 'flex',
             overflow: 'auto',
             width: 'fit-content',
             maxWidth: '100vw',
             position: 'relative',
             scrollbarWidth: '0.1rem',
-            "&::-webkit-scrollbar": {
+            '&::-webkit-scrollbar': {
               width: '10px',
               height: '5px'
             },
-            "&::-webkit-scrollbar-track": {
+            '&::-webkit-scrollbar-track': {
               backgroundColor: 'primary.main',
               width: '0.1rem',
               borderRadius: 2
             },
-            "&::-webkit-scrollbar-thumb": {
+            '&::-webkit-scrollbar-thumb': {
               backgroundColor: 'background.default',
               width: '0.1rem',
               borderRadius: 2
             }
           }}
-          noWrap variant='body2'>
+          noWrap
+          variant='body2'
+        >
           {row.coreData.address}
         </Typography>
-      );
+      )
     }
   },
   {
@@ -132,7 +138,7 @@ const columns: GridColDef[] = [
         <Typography noWrap variant='body2'>
           {row.coreData.deliveryTime || 'No establecida'}
         </Typography>
-      );
+      )
     }
   },
   {
@@ -147,7 +153,7 @@ const columns: GridColDef[] = [
         <Typography noWrap variant='body2'>
           {row.coreData.zipCode}
         </Typography>
-      );
+      )
     }
   },
   {
@@ -166,7 +172,7 @@ const columns: GridColDef[] = [
           color={userStatusObj[row.coreData.deliveryPreferences] || 'warning'}
           sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
         />
-      );
+      )
     }
   },
   {
@@ -180,7 +186,7 @@ const columns: GridColDef[] = [
         <Typography noWrap variant='body2'>
           {row.coreData.status}
         </Typography>
-      );
+      )
     }
   },
   {
@@ -192,30 +198,34 @@ const columns: GridColDef[] = [
     sortable: false,
     renderCell: ({ row }: CellType) => {
       return (
-        <Typography noWrap sx={{
-          display: 'flex',
-          overflow: 'auto',
-          width: 'fit-content',
-          maxWidth: '100vw',
-          position: 'relative',
-          scrollbarWidth: '0.1rem',
-          "&::-webkit-scrollbar": {
-            width: '10px',
-            height: '5px'
-          },
-          "&::-webkit-scrollbar-track": {
-            backgroundColor: 'primary.main',
-            width: '0.1rem',
-            borderRadius: 2
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: 'background.default',
-            width: '0.1rem',
-            borderRadius: 2
-          }
-        }}>
-            {row.coreData.buyer}
-      </Typography>);
+        <Typography
+          noWrap
+          sx={{
+            display: 'flex',
+            overflow: 'auto',
+            width: 'fit-content',
+            maxWidth: '100vw',
+            position: 'relative',
+            scrollbarWidth: '0.1rem',
+            '&::-webkit-scrollbar': {
+              width: '10px',
+              height: '5px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'primary.main',
+              width: '0.1rem',
+              borderRadius: 2
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'background.default',
+              width: '0.1rem',
+              borderRadius: 2
+            }
+          }}
+        >
+          {row.coreData.buyer}
+        </Typography>
+      )
     }
   },
   {
@@ -226,31 +236,34 @@ const columns: GridColDef[] = [
     headerName: 'Vendedor',
     renderCell: ({ row }: CellType) => {
       return (
-        <Typography noWrap sx={{
-          display: 'flex',
-          overflow: 'auto',
-          width: 'fit-content',
-          maxWidth: '100vw',
-          position: 'relative',
-          scrollbarWidth: '0.1rem',
-          "&::-webkit-scrollbar": {
-            width: '10px',
-            height: '5px'
-          },
-          "&::-webkit-scrollbar-track": {
-            backgroundColor: 'primary.main',
-            width: '0.1rem',
-            borderRadius: 2
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: 'background.default',
-            width: '0.1rem',
-            borderRadius: 2
-          }
-        }}>
+        <Typography
+          noWrap
+          sx={{
+            display: 'flex',
+            overflow: 'auto',
+            width: 'fit-content',
+            maxWidth: '100vw',
+            position: 'relative',
+            scrollbarWidth: '0.1rem',
+            '&::-webkit-scrollbar': {
+              width: '10px',
+              height: '5px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'primary.main',
+              width: '0.1rem',
+              borderRadius: 2
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'background.default',
+              width: '0.1rem',
+              borderRadius: 2
+            }
+          }}
+        >
           {row.coreData.seller}
         </Typography>
-      );
+      )
     }
   },
   {
@@ -264,7 +277,7 @@ const columns: GridColDef[] = [
         <Typography noWrap variant='body2'>
           {row.coreData.destinationLatitude}
         </Typography>
-      );
+      )
     }
   },
   {
@@ -278,7 +291,7 @@ const columns: GridColDef[] = [
         <Typography noWrap variant='body2'>
           {row.coreData.destinationLongitude}
         </Typography>
-      );
+      )
     }
   },
   {
@@ -289,133 +302,161 @@ const columns: GridColDef[] = [
     headerName: 'Origen',
     renderCell: ({ row }: CellType) => {
       return (
-        <Typography noWrap sx={{
-          display: 'flex',
-          overflow: 'auto',
-          width: 'fit-content',
-          maxWidth: '100vw',
-          position: 'relative',
-          scrollbarWidth: '0.1rem',
-          "&::-webkit-scrollbar": {
-            width: '10px',
-            height: '5px'
-          },
-          "&::-webkit-scrollbar-track": {
-            backgroundColor: 'primary.main',
-            width: '0.1rem',
-            borderRadius: 2
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: 'background.default',
-            width: '0.1rem',
-            borderRadius: 2
-          }
-        }}>
+        <Typography
+          noWrap
+          sx={{
+            display: 'flex',
+            overflow: 'auto',
+            width: 'fit-content',
+            maxWidth: '100vw',
+            position: 'relative',
+            scrollbarWidth: '0.1rem',
+            '&::-webkit-scrollbar': {
+              width: '10px',
+              height: '5px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'primary.main',
+              width: '0.1rem',
+              borderRadius: 2
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'background.default',
+              width: '0.1rem',
+              borderRadius: 2
+            }
+          }}
+        >
           {row.coreData.sellerAddress}
         </Typography>
-      );
+      )
     }
-  },
-];
+  }
+]
 
 const ShipmentsDashboard = () => {
   // ** State
-  const [deliveryPreferences, setDeliveryPreferences] = useState<string>('');
-  const [sellerAddress, setSellerAddress] = useState<string>('');
-  const [deliveryTime, setDeliveryTime] = useState<string>('');
-  const [value, setValue] = useState<string>('');
-  const [seller, setSeller] = useState<string>('');
-  const [status, setStatus] = useState<string>('');
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
-  const apiRef = useGridApiRef();
+  const [deliveryPreferences, setDeliveryPreferences] = useState<string>('')
+  const [sellerAddress, setSellerAddress] = useState<string>('')
+  const [deliveryTime, setDeliveryTime] = useState<string>('')
+  const [value, setValue] = useState<string>('')
+  const [seller, setSeller] = useState<string>('')
+  const [status, setStatus] = useState<string>('')
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
+  const [chartOptions, setChartOptions] = useState<object>({})
+  const apiRef = useGridApiRef()
   const debouncedValue = useDebounce(value)
-  
+
   // ** Hooks
-  const dispatch = useDispatch<AppDispatch>();
-  const store = useSelector((state: RootState) => state.shipment);
-  const [rowCountState, setRowCountState] = useState(store.total || 0);
+  const dispatch = useDispatch<AppDispatch>()
+  const store = useSelector((state: RootState) => state.shipment)
+  const [rowCountState, setRowCountState] = useState(store.total || 0)
 
-  useEffect(() => {
-    setRowCountState((prevRowCountState) =>
-    store.total !== undefined ? store.total : prevRowCountState,
-    );
-  }, [store.total, setRowCountState]);
+  // useEffect(() => {
+  //   setRowCountState(prevRowCountState => (store.total !== undefined ? store.total : prevRowCountState))
+  // }, [store.total, setRowCountState])
 
-  useEffect(() => {
-    connectToServer(dispatch);
-    dispatch(
-      fetchData({
-        limit: paginationModel.pageSize,
-        skip: (paginationModel.pageSize * paginationModel.page) + 1
-      })
-    );
+  // useEffect(() => {
+  //   connectToServer(dispatch)
+  //   dispatch(
+  //     fetchData({
+  //       limit: paginationModel.pageSize,
+  //       skip: paginationModel.pageSize * paginationModel.page + 1
+  //     })
+  //   )
 
-    // eslint-disable-next-line
-  }, []);
-  
-  useEffect(() => {
-    dispatch(filterData({
-      limit: paginationModel.pageSize,
-      skip: (paginationModel.pageSize * paginationModel.page),
-      ...(deliveryPreferences.length && { deliveryPreferences }),
-      ...(deliveryTime.length && { deliveryTime }),
-      ...(seller.length && { seller }),
-      ...(status.length && { status }),
-      ...(sellerAddress.length && { sellerAddress }),
-      ...(value.length && { q: value }),
-    }));
+  //   // eslint-disable-next-line
+  // }, [])
 
-    // eslint-disable-next-line
-  }, [paginationModel, store.total]);
+  // useEffect(() => {
+  //   dispatch(
+  //     filterData({
+  //       limit: paginationModel.pageSize,
+  //       skip: paginationModel.pageSize * paginationModel.page,
+  //       ...(deliveryPreferences.length && { deliveryPreferences }),
+  //       ...(deliveryTime.length && { deliveryTime }),
+  //       ...(seller.length && { seller }),
+  //       ...(status.length && { status }),
+  //       ...(sellerAddress.length && { sellerAddress }),
+  //       ...(value.length && { q: value })
+  //     })
+  //   )
 
-  useEffect(() => {
-    setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
+  //   // eslint-disable-next-line
+  // }, [paginationModel, store.total])
 
-    // eslint-disable-next-line
-  }, [dispatch, sellerAddress, deliveryPreferences, deliveryTime, status, seller, debouncedValue, store.allData]);
+  // useEffect(() => {
+  //   setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
+
+  //   // eslint-disable-next-line
+  // }, [dispatch, sellerAddress, deliveryPreferences, deliveryTime, status, seller, debouncedValue, store.allData])
 
   const handleFilter = useCallback((val: string) => {
-    setValue(val);
-  }, []);
+    setValue(val)
+  }, [])
 
   const handleDeliveryPreferenceChange = useCallback((e: SelectChangeEvent) => {
-    setDeliveryPreferences(e.target.value);
-  }, []);
+    setDeliveryPreferences(e.target.value)
+  }, [])
 
   const handleDeliveryTimeChange = useCallback((e: SelectChangeEvent) => {
-    setDeliveryTime(e.target.value);
-  }, []);
+    setDeliveryTime(e.target.value)
+  }, [])
 
   const handleAddressChange = useCallback((e: SelectChangeEvent) => {
-    setSellerAddress(e.target.value);
-  }, []);
+    setSellerAddress(e.target.value)
+  }, [])
 
   const handleSellerChange = useCallback((e: SelectChangeEvent) => {
-    setSeller(e.target.value);
-  }, []);
+    setSeller(e.target.value)
+  }, [])
 
   const handleStatusChange = useCallback((e: SelectChangeEvent) => {
-    setStatus(e.target.value);
-  }, []);
+    setStatus(e.target.value)
+  }, [])
 
   const onClick = (e: MouseEvent) => {
-    e.preventDefault();
-    const selectedRows = apiRef.current.getSelectedRows();
-    const toExport: CoreData[] = [];
+    e.preventDefault()
+    const selectedRows = apiRef.current.getSelectedRows()
+    const toExport: CoreData[] = []
 
-    selectedRows.forEach((row) => toExport.push(row.coreData));
-    if (!toExport.length) return;
+    selectedRows.forEach(row => toExport.push(row.coreData))
+    if (!toExport.length) return
 
-    const formattedData = fileExporter.formatData(toExport);
+    const formattedData = fileExporter.formatData(toExport)
 
-    fileExporter.export(formattedData);
-  };
+    fileExporter.export(formattedData)
+  }
+
+  //highcharts
+
+  useEffect(() => {
+    const url = 'https://ammper.holocruxe.com/bank?format=bar&flow=OUTFLOW&limit=2&skip=0'
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        return response.json()
+      })
+      .then(data => {
+        console.log(data)
+        setChartOptions(data)
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error)
+      })
+  }, [chartOptions, setChartOptions])
 
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <CardHeader title='Filtros de búsqueda' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
+          <CardHeader
+            title='Filtros de búsqueda'
+            sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }}
+          />
           <CardContent>
             <Grid container spacing={6}>
               <Grid item sm={4} xs={12}>
@@ -449,8 +490,10 @@ const ShipmentsDashboard = () => {
                     inputProps={{ placeholder: 'Origen' }}
                   >
                     <MenuItem value=''>Todos los orígenes</MenuItem>
-                    {store?.filters?.sellerAddress.map((address) => (
-                      <MenuItem key={address} value={address}>{address}</MenuItem>
+                    {store?.filters?.sellerAddress.map(address => (
+                      <MenuItem key={address} value={address}>
+                        {address}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -469,7 +512,9 @@ const ShipmentsDashboard = () => {
                   >
                     <MenuItem value=''>Fecha de envío</MenuItem>
                     {store?.filters?.deliveryTime?.map((deliveryTime, index) => (
-                      <MenuItem key={index} value={deliveryTime}>{deliveryTime}</MenuItem>
+                      <MenuItem key={index} value={deliveryTime}>
+                        {deliveryTime}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -487,8 +532,10 @@ const ShipmentsDashboard = () => {
                     inputProps={{ placeholder: 'Vendedor' }}
                   >
                     <MenuItem value=''>Todos los vendedores</MenuItem>
-                    {store?.filters?.seller.map((seller) => (
-                      <MenuItem key={seller} value={seller}>{seller}</MenuItem>
+                    {store?.filters?.seller.map(seller => (
+                      <MenuItem key={seller} value={seller}>
+                        {seller}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -506,8 +553,10 @@ const ShipmentsDashboard = () => {
                     inputProps={{ placeholder: 'Estado' }}
                   >
                     <MenuItem value=''>Todos los estados</MenuItem>
-                    {store?.filters?.status.map((status) => (
-                      <MenuItem key={status} value={status}>{status}</MenuItem>
+                    {store?.filters?.status.map(status => (
+                      <MenuItem key={status} value={status}>
+                        {status}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -515,22 +564,26 @@ const ShipmentsDashboard = () => {
             </Grid>
           </CardContent>
           <Divider />
-          <Grid sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginRight: 8
-          }} >
+          <Grid
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginRight: 8
+            }}
+          >
             <TableHeader value={value} handleFilter={handleFilter} />
             <Button
-              onClick={(e) => onClick(e)}
+              onClick={e => onClick(e)}
               sx={{
                 marginLeft: 4,
                 backgroundColor: 'primary.main',
                 color: '#FFF',
                 mb: 2
               }}
-            >Exportar</Button>
+            >
+              Exportar
+            </Button>
           </Grid>
           <DataGrid
             autoHeight
@@ -547,16 +600,16 @@ const ShipmentsDashboard = () => {
             onPaginationModelChange={setPaginationModel}
             sx={{
               '& .MuiDataGrid-columnHeaders': { borderRadius: 0 },
-              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+              '& .MuiDataGrid-virtualScroller::-webkit-scrollbar': {
                 width: '10px',
                 height: '5px'
               },
-              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-track": {
+              '& .MuiDataGrid-virtualScroller::-webkit-scrollbar-track': {
                 backgroundColor: 'primary.main',
                 width: '0.1rem',
                 borderRadius: 2
               },
-              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+              '& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb': {
                 backgroundColor: 'background.default',
                 width: '0.1rem',
                 borderRadius: 2
@@ -565,8 +618,10 @@ const ShipmentsDashboard = () => {
           />
         </Card>
       </Grid>
-    </Grid>
-  );
-};
 
-export default ShipmentsDashboard;
+      <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+    </Grid>
+  )
+}
+
+export default ShipmentsDashboard

@@ -37,6 +37,7 @@ import { fileExporter } from 'src/libs/xlsx/xlsx'
 // ** Imports Highcharts
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
+import { Bar } from './types/bar'
 
 interface UserStatusType {
   [key: string]: ThemeColor
@@ -344,11 +345,12 @@ const ShipmentsDashboard = () => {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [chartOptions, setChartOptions] = useState<object>({})
   const apiRef = useGridApiRef()
+  const [size, setSize] = useState<object>({ height: 0 })
 
   // const debouncedValue = useDebounce(value)
 
-  // ** Hooks
   // const dispatch = useDispatch<AppDispatch>()
+
   const store = useSelector((state: RootState) => state.shipment)
   const [rowCountState] = useState(store.total || 0)
 
@@ -431,7 +433,7 @@ const ShipmentsDashboard = () => {
   //highcharts
 
   useEffect(() => {
-    const url = 'https://ammper.holocruxe.com/bank?format=bar&flow=OUTFLOW&limit=2&skip=0'
+    const url = 'https://ammper.holocruxe.com/bank?format=bar&flow=OUTFLOW&limit=0&skip=0'
 
     fetch(url)
       .then(response => {
@@ -441,14 +443,16 @@ const ShipmentsDashboard = () => {
 
         return response.json()
       })
-      .then(data => {
-        console.log(data)
+      .then((data: Bar) => {
+        const heigthLength = data.xAxis.categories.length
+        console.log(heigthLength * 15)
+        setSize({ height: `${heigthLength * 35}px` })
         setChartOptions(data)
       })
       .catch(error => {
         console.error('Error fetching data:', error)
       })
-  }, [chartOptions, setChartOptions])
+  }, [])
 
   return (
     <Grid container spacing={6}>
@@ -619,8 +623,9 @@ const ShipmentsDashboard = () => {
           />
         </Card>
       </Grid>
-
-      <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+      <div style={{ width: '1300px' }}>
+        <HighchartsReact highcharts={Highcharts} options={{ ...chartOptions, chart: { ...size, type: 'bar' } }} />
+      </div>
     </Grid>
   )
 }

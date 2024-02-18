@@ -34,9 +34,10 @@ import { fileExporter } from 'src/libs/xlsx/xlsx'
 // ** Imports Highcharts
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
-import { Bar } from './types/bar'
+
 import { useDebounce } from 'src/hooks/useDebounce';
 import { useDispatch } from 'react-redux';
+import { Bar } from 'src/typesBar/bar';
 
 interface CellType {
   row: ResponseBank

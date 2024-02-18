@@ -18,7 +18,7 @@ type BankFilters = {
   [K in keyof Bank]: string[];
 };
 
-type RequiredProps = 'status' | 'accountCategory' | 'type' | 'category'
+type RequiredProps = 'status' | 'accountCategory' | 'type' | 'category' | 'merchantName'
 
 type Filter = Pick<BankFilters, RequiredProps> & Partial<Omit<BankFilters, RequiredProps>>;
 
@@ -26,9 +26,11 @@ export interface ResponseBank extends Bank {
   id: string
 }
 
-interface FilterWithPagination extends Partial<Bank> {
+interface FilterWithPagination extends Partial<Omit<Bank, 'category' | 'merchantName'>> {
   limit: number;
   skip: number;
+  category?: string[];
+  merchantName?: string[]
 }
 
 interface PostResponse {
@@ -100,7 +102,15 @@ export const appBanksSlice = createSlice({
     total: 1,
     params: {},
     allData: [],
-    filters: { category: [], accountCategory: [], balance: [], type: [], status: [], amount: [] }
+    filters: {
+      category: [],
+      accountCategory: [],
+      merchantName: [],
+      balance: [],
+      type: [],
+      status: [],
+      amount: []
+    }
   } as BankReducer,
   reducers: {},
   extraReducers: builder => {

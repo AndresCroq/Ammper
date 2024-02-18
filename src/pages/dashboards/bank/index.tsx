@@ -213,7 +213,8 @@ const ShipmentsDashboard = () => {
   // ** State
   const [accountCategory, setAccountCategory] = useState<string>('');
   const [isIncome, setIsIncome] = useState<string>('');
-  const [category, setCategory] = useState<string>('');
+  const [category, setCategory] = useState<string[]>([]);
+  const [merchantName, setMerchantName] = useState<string[]>([]);
   const [status, setStatus] = useState<string>('');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const apiRef = useGridApiRef();
@@ -250,6 +251,7 @@ const ShipmentsDashboard = () => {
       skip: (paginationModel.pageSize * paginationModel.page),
       ...(category.length && { category }),
       ...(accountCategory.length && { accountCategory }),
+      ...(merchantName.length && { merchantName }),
       ...(isIncome.length && { type: isIncome }),
       ...(status.length && { status }),
 
@@ -262,7 +264,7 @@ const ShipmentsDashboard = () => {
     setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
 
     // eslint-disable-next-line
-  }, [dispatch, accountCategory, category, isIncome, status, store.allData]);
+  }, [dispatch, accountCategory, merchantName, category, isIncome, status, store.allData]);
 
   const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
     setIsIncome(e.target.value);
@@ -272,8 +274,26 @@ const ShipmentsDashboard = () => {
     setAccountCategory(e.target.value);
   }, []);
 
+  const handleMerchantNameChange = useCallback((e: SelectChangeEvent) => {
+    setMerchantName((prev) => {
+      if(!e.target.value.length) return []
+      if(prev.includes(e.target.value)) {
+        return prev.filter((elm) => elm !== e.target.value)
+      }
+      
+      return [...prev, e.target.value]
+    });
+  }, []);
+
   const handleCategoryChange = useCallback((e: SelectChangeEvent) => {
-    setCategory(e.target.value);
+    setCategory((prev) => {
+      if(!e.target.value.length) return []
+      if(prev.includes(e.target.value)) {
+        return prev.filter((elm) => elm !== e.target.value)
+      }
+      
+      return [...prev, e.target.value]
+    });
   }, []);
 
   const handleStatusChange = useCallback((e: SelectChangeEvent) => {
@@ -293,6 +313,7 @@ const ShipmentsDashboard = () => {
         valueDate: '2024-01-1',
         ...(category.length && { category }),
         ...(accountCategory.length && { accountCategory }),
+        ...(merchantName.length && { merchantName }),
         ...(isIncome.length && { type: isIncome }),
         ...(status.length && { status }),
       })
@@ -321,6 +342,7 @@ const ShipmentsDashboard = () => {
         body: JSON.stringify({
           valueDate: '2024-01-1',
           ...(category.length && { category }),
+          ...(merchantName.length && { merchantName }),
           ...(accountCategory.length && { accountCategory }),
           ...(isIncome.length && { type: isIncome }),
           ...(status.length && { status }),
@@ -380,6 +402,27 @@ const ShipmentsDashboard = () => {
                   >
                     <MenuItem value=''>All categories</MenuItem>
                     {store?.filters?.category.map(status => (
+                      <MenuItem key={status} value={status}>
+                        {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='merchant-select'>Merchant</InputLabel>
+                  <Select
+                    fullWidth
+                    value={merchantName[0]}
+                    id='select-merchant'
+                    label='Select Merchant'
+                    labelId='Merchant-select'
+                    onChange={handleMerchantNameChange}
+                    inputProps={{ placeholder: 'Merchant' }}
+                  >
+                    <MenuItem value=''>All merchants</MenuItem>
+                    {store?.filters?.merchantName.map(status => (
                       <MenuItem key={status} value={status}>
                         {status}
                       </MenuItem>

@@ -22,9 +22,6 @@ import { useSelector } from 'react-redux'
 // ** Types Imports
 import { AppDispatch, RootState } from 'src/store'
 
-// ** Custom Table Components Imports
-import TableHeader from 'src/views/dashboards/shipments/filter/TableHeader'
-
 // import { connectToServer } from 'src/libs/socket.io'
 
 import { Bank, ResponseBank, fetchData, filterData } from 'src/store/apps/bank'
@@ -35,7 +32,6 @@ import { fileExporter } from 'src/libs/xlsx/xlsx'
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
-import { useDebounce } from 'src/hooks/useDebounce';
 import { useDispatch } from 'react-redux';
 import { Bar } from 'src/typesBar/bar';
 
@@ -217,11 +213,9 @@ const ShipmentsDashboard = () => {
   const [isIncome, setIsIncome] = useState<string>('');
 
   // const [category, setCategory] = useState<string>('');
-  const [value, setValue] = useState<string>('');
   const [status, setStatus] = useState<string>('');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const apiRef = useGridApiRef();
-  const debouncedValue = useDebounce(value)
   const [chartOptions, setChartOptions] = useState<object>({})
   const [size, setSize] = useState<object>({ height: 0 })
   
@@ -265,11 +259,7 @@ const ShipmentsDashboard = () => {
     setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
 
     // eslint-disable-next-line
-  }, [dispatch, accountCategory, isIncome, status, debouncedValue, store.allData]);
-
-  const handleFilter = useCallback((val: string) => {
-    setValue(val);
-  }, []);
+  }, [dispatch, accountCategory, isIncome, status, store.allData]);
 
   const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
     setIsIncome(e.target.value);
@@ -409,7 +399,6 @@ const ShipmentsDashboard = () => {
               marginRight: 8
             }}
           >
-            <TableHeader value={value} handleFilter={handleFilter} />
             <Button
               onClick={e => onClick(e)}
               sx={{

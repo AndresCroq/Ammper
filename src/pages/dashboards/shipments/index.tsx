@@ -37,7 +37,7 @@ import { fileExporter } from 'src/libs/xlsx/xlsx'
 // ** Imports Highcharts
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
-import { Bar } from './types/bar'
+import { Bar } from '../../../typesBar/bar'
 
 interface UserStatusType {
   [key: string]: ThemeColor

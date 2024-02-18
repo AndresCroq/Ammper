@@ -7,19 +7,13 @@ interface Column {
   format?: string;
 }
 
-type TranslatedFields = { [K in keyof Bank]?: string }
-
-const translatedFields: TranslatedFields = {
-  status: 'Estado',
-} 
-
 class FileExporter {
   formatData(data: Bank[]): IJsonSheet[] {
     const columns = this.createColumns(data);
     const content = this.createContent(data);
 
     const exportableData: IJsonSheet[] = [{
-      sheet: 'Envíos',
+      sheet: 'Account Data',
       columns,
       content
     }]
@@ -31,10 +25,10 @@ class FileExporter {
     const columns: Column[] = []
   
     for(const key in data[0]) {
-      const translatedKey = this.translateKeys(key as keyof Bank)
+      if(key === '_id' || key === 'id') continue
       columns.push({
-        label: this.toUpperCaseFirstLetter(translatedKey),
-        value: translatedKey,
+        label: this.toUpperCaseFirstLetter(key),
+        value: key,
       })
     }
     
@@ -47,10 +41,10 @@ class FileExporter {
     data.map((bank) => {
       let translated: any = {}
       for(const key in bank) {
-        const translatedKey = this.translateKeys(key as keyof Bank)
+        if(key === '_id' || key === 'id') continue
         translated = {
           ...translated,
-          [this.toUpperCaseFirstLetter(translatedKey)]: bank[key as keyof Bank]
+          [key]: bank[key as keyof Bank]
         }
       }
       content.push(translated)
@@ -61,10 +55,6 @@ class FileExporter {
 
   private toUpperCaseFirstLetter (str: string) {
     return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  private translateKeys (string: keyof Bank): any {
-    return translatedFields[string] ? translatedFields[string] : string;
   }
 
   export(toExport: IJsonSheet[]) {

@@ -22,9 +22,6 @@ import { useSelector } from 'react-redux'
 // ** Types Imports
 import { AppDispatch, RootState } from 'src/store'
 
-// ** Custom Table Components Imports
-import TableHeader from 'src/views/dashboards/shipments/filter/TableHeader'
-
 // import { connectToServer } from 'src/libs/socket.io'
 
 import { Bank, ResponseBank, fetchData, filterData } from 'src/store/apps/bank'
@@ -35,7 +32,6 @@ import { fileExporter } from 'src/libs/xlsx/xlsx'
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
-import { useDebounce } from 'src/hooks/useDebounce';
 import { useDispatch } from 'react-redux';
 import { Bar } from 'src/typesBar/bar';
 
@@ -84,7 +80,7 @@ const columns: GridColDef[] = [
   },
   {
     flex: 0.2,
-    minWidth: 130,
+    minWidth: 150,
     field: 'accountCategory',
     sortable: false,
     headerName: 'Tipo de cuenta',
@@ -197,7 +193,7 @@ const columns: GridColDef[] = [
   },
   {
     flex: 0.2,
-    minWidth: 140,
+    minWidth: 120,
     field: 'value',
     sortable: false,
     headerName: 'Fecha',
@@ -213,17 +209,13 @@ const columns: GridColDef[] = [
 
 const ShipmentsDashboard = () => {
   // ** State
-  const [deliveryPreferences, setDeliveryPreferences] = useState<string>('');
+  const [accountCategory, setAccountCategory] = useState<string>('');
+  const [isIncome, setIsIncome] = useState<string>('');
 
   // const [category, setCategory] = useState<string>('');
-  // const [deliveryTime, setDeliveryTime] = useState<string>('');
-  const [value, setValue] = useState<string>('');
-
-  // const [seller, setSeller] = useState<string>('');
   const [status, setStatus] = useState<string>('');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const apiRef = useGridApiRef();
-  const debouncedValue = useDebounce(value)
   const [chartOptions, setChartOptions] = useState<object>({})
   const [size, setSize] = useState<object>({ height: 0 })
   
@@ -254,9 +246,10 @@ const ShipmentsDashboard = () => {
     dispatch(filterData({
       limit: paginationModel.pageSize,
       skip: (paginationModel.pageSize * paginationModel.page),
-
-      // ...(category.length && { category }),
+      ...(accountCategory.length && { accountCategory }),
+      ...(isIncome.length && { type: isIncome }),
       ...(status.length && { status }),
+
     }));
 
     // eslint-disable-next-line
@@ -266,34 +259,22 @@ const ShipmentsDashboard = () => {
     setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
 
     // eslint-disable-next-line
-  }, [dispatch, deliveryPreferences, status, debouncedValue, store.allData]);
+  }, [dispatch, accountCategory, isIncome, status, store.allData]);
 
-  const handleFilter = useCallback((val: string) => {
-    setValue(val);
+  const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
+    setIsIncome(e.target.value);
   }, []);
 
-  const handleDeliveryPreferenceChange = useCallback((e: SelectChangeEvent) => {
-    setDeliveryPreferences(e.target.value);
+  const handleAccountCategory = useCallback((e: SelectChangeEvent) => {
+    setAccountCategory(e.target.value);
   }, []);
-
-  // const handleDeliveryTimeChange = useCallback((e: SelectChangeEvent) => {
-  //   setDeliveryTime(e.target.value);
-  // }, []);
-
-  // const handleAddressChange = useCallback((e: SelectChangeEvent) => {
-  //   setCategory(e.target.value);
-  // }, []);
-
-  // const handleSellerChange = useCallback((e: SelectChangeEvent) => {
-  //   setSeller(e.target.value);
-  // }, []);
 
   const handleStatusChange = useCallback((e: SelectChangeEvent) => {
     setStatus(e.target.value);
   }, []);
 
   useEffect(() => {
-    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=OUTFLOW&limit=0&skip=0`
+    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
 
     fetch(url, {
       method: 'POST',
@@ -301,7 +282,10 @@ const ShipmentsDashboard = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        valueDate: '2024-01-1'
+        valueDate: '2024-01-1',
+        ...(accountCategory.length && { accountCategory }),
+        ...(isIncome.length && { type: isIncome }),
+        ...(status.length && { status }),
       })
     })
       .then(response => {
@@ -319,14 +303,15 @@ const ShipmentsDashboard = () => {
       .catch(error => {
         console.error('Error fetching data:', error)
       })
-  }, [])
+
+      // eslint-disable-next-line
+  }, [paginationModel, store.total])
 
   const onClick = (e: MouseEvent) => {
     e.preventDefault();
     const selectedRows = apiRef.current.getSelectedRows() as unknown as Bank[];
     const toExport: Bank[] = [];
 
-    console.log(selectedRows)
     selectedRows.forEach((row) => toExport.push(row));
     if (!toExport.length) return;
 
@@ -347,59 +332,20 @@ const ShipmentsDashboard = () => {
             <Grid container spacing={6}>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='delivery-preference-select'>Tipo de envío</InputLabel>
+                  <InputLabel id='type-select'>Type</InputLabel>
                   <Select
                     fullWidth
-                    value={deliveryPreferences}
-                    id='select-delivery-preference'
-                    label='Select Delivery Preference'
-                    labelId='delivery-preference-select'
-                    onChange={handleDeliveryPreferenceChange}
-                    inputProps={{ placeholder: 'Origen' }}
+                    value={isIncome}
+                    id='select-type'
+                    label='Select Type'
+                    labelId='Type-select'
+                    onChange={handleIncomeChange}
+                    inputProps={{ placeholder: 'Type' }}
                   >
-                    <MenuItem value=''>Todos los tipos de envío</MenuItem>
-                    <MenuItem value='residential'>Residential</MenuItem>
-                    <MenuItem value='business'>Business</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              {/* <Grid item sm={4} xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel id='origin-select'>Origen</InputLabel>
-                  <Select
-                    fullWidth
-                    value={category}
-                    id='select-origin'
-                    label='Select Origin'
-                    labelId='origin-select'
-                    onChange={handleAddressChange}
-                    inputProps={{ placeholder: 'Origen' }}
-                  >
-                    <MenuItem value=''>Todos los orígenes</MenuItem>
-                    {store?.filters?.category.map(cat => (
-                      <MenuItem key={cat} value={cat}>
-                        {cat}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid> */}
-              {/* <Grid item sm={4} xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel id='origin-select'>Fecha de envío</InputLabel>
-                  <Select
-                    fullWidth
-                    value={deliveryTime}
-                    id='select-date'
-                    label='Select Date'
-                    labelId='date-select'
-                    onChange={handleDeliveryTimeChange}
-                    inputProps={{ placeholder: 'Fecha de envío' }}
-                  >
-                    <MenuItem value=''>Fecha de envío</MenuItem>
-                    {store?.filters?.deliveryTime?.map((deliveryTime, index) => (
-                      <MenuItem key={index} value={deliveryTime}>
-                        {deliveryTime}
+                    <MenuItem value=''>All types</MenuItem>
+                    {store?.filters?.type.map(status => (
+                      <MenuItem key={status} value={status}>
+                        {status}
                       </MenuItem>
                     ))}
                   </Select>
@@ -407,25 +353,25 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='status-select'>Vendedor</InputLabel>
+                  <InputLabel id='category-select'>Account category</InputLabel>
                   <Select
                     fullWidth
-                    value={seller}
-                    id='select-seller'
-                    label='Select Seller'
-                    labelId='seller-select'
-                    onChange={handleSellerChange}
-                    inputProps={{ placeholder: 'Vendedor' }}
+                    value={accountCategory}
+                    id='select-account-category'
+                    label='Select Account Category'
+                    labelId='account-category-select'
+                    onChange={handleAccountCategory}
+                    inputProps={{ placeholder: 'Category' }}
                   >
-                    <MenuItem value=''>Todos los vendedores</MenuItem>
-                    {store?.filters?.seller.map(seller => (
-                      <MenuItem key={seller} value={seller}>
-                        {seller}
+                    <MenuItem value=''>All categories</MenuItem>
+                    {store?.filters?.accountCategory.map(cat => (
+                      <MenuItem key={cat} value={cat}>
+                        {cat}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
-              </Grid> */}
+              </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
                   <InputLabel id='status-select'>Estado</InputLabel>
@@ -458,7 +404,6 @@ const ShipmentsDashboard = () => {
               marginRight: 8
             }}
           >
-            <TableHeader value={value} handleFilter={handleFilter} />
             <Button
               onClick={e => onClick(e)}
               sx={{

@@ -18,7 +18,7 @@ type BankFilters = {
   [K in keyof Bank]: string[];
 };
 
-type RequiredProps = 'status' | 'category'
+type RequiredProps = 'status' | 'accountCategory' | 'type'
 
 type Filter = Pick<BankFilters, RequiredProps> & Partial<Omit<BankFilters, RequiredProps>>;
 
@@ -47,8 +47,11 @@ export const fetchData = createAsyncThunk('appBank/fetchData', async ({ limit, s
     const banksWithId: ResponseBank[] = data.banks.map((e) => ({ id: e._id, ...e }));
 
 
-    const filters = {} as any; 
-    Object.keys(data.banks[0]).forEach((e) => { if(e !== '_id') filters[e] = [] });
+    const filters: Filter = {
+      accountCategory: ['CREDIT_CARD', 'LOAN_ACCOUNT', 'CHECKING_ACCOUNT'],
+      status: ['PENDING', 'PROCESSED'],
+      type: ['INFLOW', 'OUTFLOW'],
+    }
 
     const dispatchableData = {
       allData: { coreData: banksWithId },

@@ -1,5 +1,5 @@
 import { Manager, Socket } from "socket.io-client";
-import { addFromSocket } from "src/store/apps/shipments";
+import { addFromSocket } from "src/store/apps/bank";
 
 let socket: Socket
 

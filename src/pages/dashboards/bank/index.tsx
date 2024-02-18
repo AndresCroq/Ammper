@@ -274,7 +274,7 @@ const ShipmentsDashboard = () => {
   }, []);
 
   useEffect(() => {
-    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=OUTFLOW&limit=0&skip=0`
+    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
 
     fetch(url, {
       method: 'POST',
@@ -282,7 +282,10 @@ const ShipmentsDashboard = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        valueDate: '2024-01-1'
+        valueDate: '2024-01-1',
+        ...(accountCategory.length && { accountCategory }),
+        ...(isIncome.length && { type: isIncome }),
+        ...(status.length && { status }),
       })
     })
       .then(response => {
@@ -300,7 +303,9 @@ const ShipmentsDashboard = () => {
       .catch(error => {
         console.error('Error fetching data:', error)
       })
-  }, [])
+
+      // eslint-disable-next-line
+  }, [paginationModel, store.total])
 
   const onClick = (e: MouseEvent) => {
     e.preventDefault();

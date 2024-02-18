@@ -3,7 +3,7 @@
  */
 const getHomeRoute = (role: string) => {
   if (role === 'client') return '/acl';
-  else return '/dashboards/shipments';
+  else return '/dashboards/bank';
 };
 
 export default getHomeRoute;

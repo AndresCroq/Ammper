@@ -1,9 +1,7 @@
 import { scatterSeries } from "src/types";
 
-export const ScatterChart = (flow: string, series: scatterSeries) =>  {
-  console.log(series)
-  
-return {
+export const ScatterChart = (flow: string, series: scatterSeries) =>  {  
+  return {
     chart: {
       type: 'scatter',
       zoomType: 'xy',

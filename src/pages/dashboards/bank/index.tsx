@@ -33,7 +33,9 @@ import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
 import { useDispatch } from 'react-redux';
-import { Bar } from 'src/typesBar/bar';
+import { Bar } from 'src/types/bar';
+import { scatterSeries } from 'src/types';
+import { ScatterChart } from 'src/libs/high-charts';
 
 interface CellType {
   row: ResponseBank
@@ -217,6 +219,7 @@ const ShipmentsDashboard = () => {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const apiRef = useGridApiRef();
   const [chartOptions, setChartOptions] = useState<object>({})
+  const [scatterOptions, setScatterOptions] = useState<object>({})
   const [size, setSize] = useState<object>({ height: 0 })
   
   // ** Hooks
@@ -275,6 +278,7 @@ const ShipmentsDashboard = () => {
 
   useEffect(() => {
     const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
+    const scatterUrl = `${process.env.NEXT_PUBLIC_BACK}/bank?format=scatter&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
 
     fetch(url, {
       method: 'POST',
@@ -303,6 +307,32 @@ const ShipmentsDashboard = () => {
       .catch(error => {
         console.error('Error fetching data:', error)
       })
+
+      fetch(scatterUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          valueDate: '2024-01-1',
+          ...(accountCategory.length && { accountCategory }),
+          ...(isIncome.length && { type: isIncome }),
+          ...(status.length && { status }),
+        })
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok')
+          }
+  
+          return response.json()
+        })
+        .then((data: scatterSeries) => {
+          setScatterOptions(ScatterChart(isIncome, data))
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error)
+        })
 
       // eslint-disable-next-line
   }, [paginationModel, store.total])
@@ -451,6 +481,9 @@ const ShipmentsDashboard = () => {
       </Grid>
       <div style={{ width: '1300px' }}>
         <HighchartsReact highcharts={Highcharts} options={{ ...chartOptions, chart: { ...size, type: 'bar' } }} />
+      </div>
+      <div style={{ width: '800px' }}>
+        <HighchartsReact highcharts={Highcharts} options={{ ...scatterOptions }} />
       </div>
     </Grid>
   )

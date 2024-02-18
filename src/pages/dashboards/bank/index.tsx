@@ -48,7 +48,7 @@ const columns: GridColDef[] = [
     flex: 0.15,
     field: 'category',
     sortable: false,
-    minWidth: 200,
+    minWidth: 300,
     headerName: 'Categoría',
     renderCell: ({ row }: CellType) => {
       return (
@@ -84,7 +84,7 @@ const columns: GridColDef[] = [
   },
   {
     flex: 0.2,
-    width: 50,
+    minWidth: 130,
     field: 'accountCategory',
     sortable: false,
     headerName: 'Tipo de cuenta',
@@ -138,8 +138,8 @@ const columns: GridColDef[] = [
   },
   {
     flex: 0.2,
-    minWidth: 160,
-    maxWidth: 160,
+    minWidth: 100,
+    maxWidth: 100,
     field: 'amount',
     sortable: false,
     headerName: 'Cantidad',
@@ -153,8 +153,8 @@ const columns: GridColDef[] = [
   },
   {
     flex: 0.15,
-    maxWidth: 100,
-    minWidth: 100,
+    maxWidth: 110,
+    minWidth: 110,
     headerName: 'type',
     field: 'Tipo',
     sortable: false,
@@ -168,8 +168,8 @@ const columns: GridColDef[] = [
   },
   {
     flex: 0.15,
-    maxWidth: 100,
-    minWidth: 100,
+    maxWidth: 120,
+    minWidth: 120,
     headerName: 'status',
     field: 'Estado',
     sortable: false,
@@ -183,7 +183,7 @@ const columns: GridColDef[] = [
   },
   {
     flex: 0.2,
-    minWidth: 140,
+    minWidth: 100,
     field: 'balance',
     sortable: false,
     headerName: 'Balance',

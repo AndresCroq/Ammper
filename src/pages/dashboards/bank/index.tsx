@@ -19,83 +19,40 @@ import Select, { SelectChangeEvent } from '@mui/material/Select'
 // ** Store Imports
 import { useSelector } from 'react-redux'
 
-// ** Custom Components Imports
-import CustomChip from 'src/@core/components/mui/chip'
-
 // ** Types Imports
-import { RootState } from 'src/store'
-import { ThemeColor } from 'src/@core/layouts/types'
+import { AppDispatch, RootState } from 'src/store'
 
 // ** Custom Table Components Imports
 import TableHeader from 'src/views/dashboards/shipments/filter/TableHeader'
 
 // import { connectToServer } from 'src/libs/socket.io'
 
-import { CoreData, ResponseShipment } from 'src/store/apps/shipments'
+import { Bank, ResponseBank, fetchData, filterData } from 'src/store/apps/bank'
+
 import { fileExporter } from 'src/libs/xlsx/xlsx'
 
 // ** Imports Highcharts
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
-import { Bar } from '../../../typesBar/bar'
-
-interface UserStatusType {
-  [key: string]: ThemeColor
-}
+import { Bar } from './types/bar'
+import { useDebounce } from 'src/hooks/useDebounce';
+import { useDispatch } from 'react-redux';
 
 interface CellType {
-  row: ResponseShipment
-}
-
-const userStatusObj: UserStatusType = {
-  residential: 'success',
-  business: 'secondary'
+  row: ResponseBank
 }
 
 const columns: GridColDef[] = [
   {
-    flex: 0.2,
-    minWidth: 150,
-    maxWidth: 150,
-    field: 'códigoDeEnvío',
+    flex: 0.15,
+    field: 'category',
     sortable: false,
-    headerName: 'Código de envío',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
-          <Typography noWrap variant='caption'>
-            {`${row.coreData.id}`}
-          </Typography>
-        </Box>
-      )
-    }
-  },
-  {
-    flex: 0.2,
-    minWidth: 150,
-    maxWidth: 150,
-    field: 'codigo de venta',
-    sortable: false,
-    headerName: 'Código de venta',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
-          <Typography noWrap variant='caption'>
-            {`${row.coreData.order}`}
-          </Typography>
-        </Box>
-      )
-    }
-  },
-  {
-    flex: 0.2,
-    minWidth: 300,
-    field: 'Destino',
-    sortable: false,
-    headerName: 'Destino',
+    minWidth: 200,
+    headerName: 'Categoría',
     renderCell: ({ row }: CellType) => {
       return (
         <Typography
+          noWrap
           sx={{
             display: 'flex',
             overflow: 'auto',
@@ -118,10 +75,62 @@ const columns: GridColDef[] = [
               borderRadius: 2
             }
           }}
-          noWrap
-          variant='body2'
         >
-          {row.coreData.address}
+          {row.category}
+        </Typography>
+      )
+    }
+  },
+  {
+    flex: 0.2,
+    width: 50,
+    field: 'accountCategory',
+    sortable: false,
+    headerName: 'Tipo de cuenta',
+    renderCell: ({ row }: CellType) => {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
+          <Typography noWrap variant='caption'>
+            {`${row.accountCategory}`}
+          </Typography>
+        </Box>
+      )
+    }
+  },
+  {
+    flex: 0.15,
+    field: 'merchant',
+    sortable: false,
+    minWidth: 340,
+    headerName: 'Compañía',
+    renderCell: ({ row }: CellType) => {
+      return (
+        <Typography
+          noWrap
+          sx={{
+            display: 'flex',
+            overflow: 'auto',
+            width: 'fit-content',
+            maxWidth: '100vw',
+            position: 'relative',
+            scrollbarWidth: '0.1rem',
+            '&::-webkit-scrollbar': {
+              width: '10px',
+              height: '5px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'primary.main',
+              width: '0.1rem',
+              borderRadius: 2
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'background.default',
+              width: '0.1rem',
+              borderRadius: 2
+            }
+          }}
+        >
+          {row.merchantName}
         </Typography>
       )
     }
@@ -130,13 +139,13 @@ const columns: GridColDef[] = [
     flex: 0.2,
     minWidth: 160,
     maxWidth: 160,
-    field: 'FechaDeEnvío',
+    field: 'amount',
     sortable: false,
-    headerName: 'Fecha de envío',
+    headerName: 'Cantidad',
     renderCell: ({ row }: CellType) => {
       return (
         <Typography noWrap variant='body2'>
-          {row.coreData.deliveryTime || 'No establecida'}
+          {row.amount}
         </Typography>
       )
     }
@@ -145,123 +154,28 @@ const columns: GridColDef[] = [
     flex: 0.15,
     maxWidth: 100,
     minWidth: 100,
-    headerName: 'Zip',
-    field: 'Zip',
+    headerName: 'type',
+    field: 'Tipo',
     sortable: false,
     renderCell: ({ row }: CellType) => {
       return (
         <Typography noWrap variant='body2'>
-          {row.coreData.zipCode}
+          {row.type}
         </Typography>
       )
     }
   },
   {
-    flex: 0.1,
-    maxWidth: 120,
-    minWidth: 120,
-    field: 'envío',
-    sortable: false,
-    headerName: 'Envío',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.coreData.deliveryPreferences}
-          color={userStatusObj[row.coreData.deliveryPreferences] || 'warning'}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-        />
-      )
-    }
-  },
-  {
-    flex: 0.2,
-    minWidth: 150,
+    flex: 0.15,
+    maxWidth: 100,
+    minWidth: 100,
+    headerName: 'status',
     field: 'Estado',
     sortable: false,
-    headerName: 'Estado',
     renderCell: ({ row }: CellType) => {
       return (
         <Typography noWrap variant='body2'>
-          {row.coreData.status}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.15,
-    field: 'comprador',
-    maxWidth: 280,
-    minWidth: 280,
-    headerName: 'Comprador',
-    sortable: false,
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography
-          noWrap
-          sx={{
-            display: 'flex',
-            overflow: 'auto',
-            width: 'fit-content',
-            maxWidth: '100vw',
-            position: 'relative',
-            scrollbarWidth: '0.1rem',
-            '&::-webkit-scrollbar': {
-              width: '10px',
-              height: '5px'
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: 'primary.main',
-              width: '0.1rem',
-              borderRadius: 2
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'background.default',
-              width: '0.1rem',
-              borderRadius: 2
-            }
-          }}
-        >
-          {row.coreData.buyer}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.15,
-    field: 'vendedeor',
-    sortable: false,
-    minWidth: 240,
-    headerName: 'Vendedor',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography
-          noWrap
-          sx={{
-            display: 'flex',
-            overflow: 'auto',
-            width: 'fit-content',
-            maxWidth: '100vw',
-            position: 'relative',
-            scrollbarWidth: '0.1rem',
-            '&::-webkit-scrollbar': {
-              width: '10px',
-              height: '5px'
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: 'primary.main',
-              width: '0.1rem',
-              borderRadius: 2
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'background.default',
-              width: '0.1rem',
-              borderRadius: 2
-            }
-          }}
-        >
-          {row.coreData.seller}
+          {row.status}
         </Typography>
       )
     }
@@ -269,13 +183,13 @@ const columns: GridColDef[] = [
   {
     flex: 0.2,
     minWidth: 140,
-    field: 'Latitud',
+    field: 'balance',
     sortable: false,
-    headerName: 'Latitud',
+    headerName: 'Balance',
     renderCell: ({ row }: CellType) => {
       return (
         <Typography noWrap variant='body2'>
-          {row.coreData.destinationLatitude}
+          {row.balance}
         </Typography>
       )
     }
@@ -283,159 +197,112 @@ const columns: GridColDef[] = [
   {
     flex: 0.2,
     minWidth: 140,
-    field: 'Longitud',
+    field: 'value',
     sortable: false,
-    headerName: 'Longitud',
+    headerName: 'Fecha',
     renderCell: ({ row }: CellType) => {
       return (
         <Typography noWrap variant='body2'>
-          {row.coreData.destinationLongitude}
+          {row.valueDate}
         </Typography>
       )
     }
   },
-  {
-    flex: 0.15,
-    field: 'Origen',
-    sortable: false,
-    minWidth: 340,
-    headerName: 'Origen',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography
-          noWrap
-          sx={{
-            display: 'flex',
-            overflow: 'auto',
-            width: 'fit-content',
-            maxWidth: '100vw',
-            position: 'relative',
-            scrollbarWidth: '0.1rem',
-            '&::-webkit-scrollbar': {
-              width: '10px',
-              height: '5px'
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: 'primary.main',
-              width: '0.1rem',
-              borderRadius: 2
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'background.default',
-              width: '0.1rem',
-              borderRadius: 2
-            }
-          }}
-        >
-          {row.coreData.sellerAddress}
-        </Typography>
-      )
-    }
-  }
 ]
 
 const ShipmentsDashboard = () => {
   // ** State
-  const [deliveryPreferences, setDeliveryPreferences] = useState<string>('')
-  const [sellerAddress, setSellerAddress] = useState<string>('')
-  const [deliveryTime, setDeliveryTime] = useState<string>('')
-  const [value, setValue] = useState<string>('')
-  const [seller, setSeller] = useState<string>('')
-  const [status, setStatus] = useState<string>('')
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
+  const [deliveryPreferences, setDeliveryPreferences] = useState<string>('');
+
+  // const [category, setCategory] = useState<string>('');
+  // const [deliveryTime, setDeliveryTime] = useState<string>('');
+  const [value, setValue] = useState<string>('');
+
+  // const [seller, setSeller] = useState<string>('');
+  const [status, setStatus] = useState<string>('');
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const apiRef = useGridApiRef();
+  const debouncedValue = useDebounce(value)
   const [chartOptions, setChartOptions] = useState<object>({})
-  const apiRef = useGridApiRef()
   const [size, setSize] = useState<object>({ height: 0 })
-
-  // const debouncedValue = useDebounce(value)
-
-  // const dispatch = useDispatch<AppDispatch>()
-
-  const store = useSelector((state: RootState) => state.shipment)
-  const [rowCountState] = useState(store.total || 0)
-
-  // useEffect(() => {
-  //   setRowCountState(prevRowCountState => (store.total !== undefined ? store.total : prevRowCountState))
-  // }, [store.total, setRowCountState])
-
-  // useEffect(() => {
-  //   connectToServer(dispatch)
-  //   dispatch(
-  //     fetchData({
-  //       limit: paginationModel.pageSize,
-  //       skip: paginationModel.pageSize * paginationModel.page + 1
-  //     })
-  //   )
-
-  //   // eslint-disable-next-line
-  // }, [])
-
-  // useEffect(() => {
-  //   dispatch(
-  //     filterData({
-  //       limit: paginationModel.pageSize,
-  //       skip: paginationModel.pageSize * paginationModel.page,
-  //       ...(deliveryPreferences.length && { deliveryPreferences }),
-  //       ...(deliveryTime.length && { deliveryTime }),
-  //       ...(seller.length && { seller }),
-  //       ...(status.length && { status }),
-  //       ...(sellerAddress.length && { sellerAddress }),
-  //       ...(value.length && { q: value })
-  //     })
-  //   )
-
-  //   // eslint-disable-next-line
-  // }, [paginationModel, store.total])
-
-  // useEffect(() => {
-  //   setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
-
-  //   // eslint-disable-next-line
-  // }, [dispatch, sellerAddress, deliveryPreferences, deliveryTime, status, seller, debouncedValue, store.allData])
-
-  const handleFilter = useCallback((val: string) => {
-    setValue(val)
-  }, [])
-
-  const handleDeliveryPreferenceChange = useCallback((e: SelectChangeEvent) => {
-    setDeliveryPreferences(e.target.value)
-  }, [])
-
-  const handleDeliveryTimeChange = useCallback((e: SelectChangeEvent) => {
-    setDeliveryTime(e.target.value)
-  }, [])
-
-  const handleAddressChange = useCallback((e: SelectChangeEvent) => {
-    setSellerAddress(e.target.value)
-  }, [])
-
-  const handleSellerChange = useCallback((e: SelectChangeEvent) => {
-    setSeller(e.target.value)
-  }, [])
-
-  const handleStatusChange = useCallback((e: SelectChangeEvent) => {
-    setStatus(e.target.value)
-  }, [])
-
-  const onClick = (e: MouseEvent) => {
-    e.preventDefault()
-    const selectedRows = apiRef.current.getSelectedRows()
-    const toExport: CoreData[] = []
-
-    selectedRows.forEach(row => toExport.push(row.coreData))
-    if (!toExport.length) return
-
-    const formattedData = fileExporter.formatData(toExport)
-
-    fileExporter.export(formattedData)
-  }
-
-  //highcharts
+  
+  // ** Hooks
+  const dispatch = useDispatch<AppDispatch>();
+  const store = useSelector((state: RootState) => state.bank);
+  const [rowCountState, setRowCountState] = useState(store.total || 0);
 
   useEffect(() => {
-    const url = 'https://ammper.holocruxe.com/bank?format=bar&flow=OUTFLOW&limit=0&skip=0'
+    setRowCountState((prevRowCountState) =>
+    store.total !== undefined ? store.total : prevRowCountState,
+    );
+  }, [store.total, setRowCountState]);
 
-    fetch(url)
+  useEffect(() => {
+    // connectToServer(dispatch);
+    dispatch(
+      fetchData({
+        limit: paginationModel.pageSize,
+        skip: (paginationModel.pageSize * paginationModel.page) + 1
+      })
+    );
+
+    // eslint-disable-next-line
+  }, []);
+  
+  useEffect(() => {
+    dispatch(filterData({
+      limit: paginationModel.pageSize,
+      skip: (paginationModel.pageSize * paginationModel.page),
+
+      // ...(category.length && { category }),
+      ...(status.length && { status }),
+    }));
+
+    // eslint-disable-next-line
+  }, [paginationModel, store.total]);
+
+  useEffect(() => {
+    setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
+
+    // eslint-disable-next-line
+  }, [dispatch, deliveryPreferences, status, debouncedValue, store.allData]);
+
+  const handleFilter = useCallback((val: string) => {
+    setValue(val);
+  }, []);
+
+  const handleDeliveryPreferenceChange = useCallback((e: SelectChangeEvent) => {
+    setDeliveryPreferences(e.target.value);
+  }, []);
+
+  // const handleDeliveryTimeChange = useCallback((e: SelectChangeEvent) => {
+  //   setDeliveryTime(e.target.value);
+  // }, []);
+
+  // const handleAddressChange = useCallback((e: SelectChangeEvent) => {
+  //   setCategory(e.target.value);
+  // }, []);
+
+  // const handleSellerChange = useCallback((e: SelectChangeEvent) => {
+  //   setSeller(e.target.value);
+  // }, []);
+
+  const handleStatusChange = useCallback((e: SelectChangeEvent) => {
+    setStatus(e.target.value);
+  }, []);
+
+  useEffect(() => {
+    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=OUTFLOW&limit=0&skip=0`
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        valueDate: '2024-01-1'
+      })
+    })
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok')
@@ -444,9 +311,8 @@ const ShipmentsDashboard = () => {
         return response.json()
       })
       .then((data: Bar) => {
-        const heigthLength = data.xAxis.categories.length
-        console.log(heigthLength * 15)
-        setSize({ height: `${heigthLength * 35}px` })
+        const heigthLength = data.xAxis.categories.length * 25
+        setSize({ height: `${heigthLength + 200}px` })
         setChartOptions(data)
       })
       .catch(error => {
@@ -454,8 +320,22 @@ const ShipmentsDashboard = () => {
       })
   }, [])
 
+  const onClick = (e: MouseEvent) => {
+    e.preventDefault();
+    const selectedRows = apiRef.current.getSelectedRows() as unknown as Bank[];
+    const toExport: Bank[] = [];
+
+    console.log(selectedRows)
+    selectedRows.forEach((row) => toExport.push(row));
+    if (!toExport.length) return;
+
+    const formattedData = fileExporter.formatData(toExport);
+
+    fileExporter.export(formattedData);
+  };
+
   return (
-    <Grid container spacing={6}>
+    <Grid container style={{ justifyContent: 'center', gap: '30px' }} spacing={6}>
       <Grid item xs={12}>
         <Card>
           <CardHeader
@@ -482,12 +362,12 @@ const ShipmentsDashboard = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item sm={4} xs={12}>
+              {/* <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
                   <InputLabel id='origin-select'>Origen</InputLabel>
                   <Select
                     fullWidth
-                    value={sellerAddress}
+                    value={category}
                     id='select-origin'
                     label='Select Origin'
                     labelId='origin-select'
@@ -495,15 +375,15 @@ const ShipmentsDashboard = () => {
                     inputProps={{ placeholder: 'Origen' }}
                   >
                     <MenuItem value=''>Todos los orígenes</MenuItem>
-                    {store?.filters?.sellerAddress.map(address => (
-                      <MenuItem key={address} value={address}>
-                        {address}
+                    {store?.filters?.category.map(cat => (
+                      <MenuItem key={cat} value={cat}>
+                        {cat}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
-              </Grid>
-              <Grid item sm={4} xs={12}>
+              </Grid> */}
+              {/* <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
                   <InputLabel id='origin-select'>Fecha de envío</InputLabel>
                   <Select
@@ -544,7 +424,7 @@ const ShipmentsDashboard = () => {
                     ))}
                   </Select>
                 </FormControl>
-              </Grid>
+              </Grid> */}
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
                   <InputLabel id='status-select'>Estado</InputLabel>

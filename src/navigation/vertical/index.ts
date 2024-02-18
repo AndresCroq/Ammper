@@ -4,15 +4,10 @@ import { VerticalNavItemsType } from 'src/@core/layouts/types'
 const navigation = (): VerticalNavItemsType => {
   return [
     {
-      title: 'Envíos',
+      title: 'Datos de la cuenta',
       icon: 'mdi:home-outline',
-      path: '/dashboards/shipments'
+      path: '/dashboards/bank'
     },
-    {
-      title: 'Generar permisos',
-      icon: 'mdi:file-document-outline',
-      path: '/dashboards/generate-urls'
-    }
   ]
 }
 

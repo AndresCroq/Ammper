@@ -2,13 +2,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 
 // ** Reducers
-import shipment from 'src/store/apps/shipments'
+import bank from 'src/store/apps/bank'
 import user from 'src/store/apps/user'
 import url from 'src/store/apps/urls'
 
 export const store = configureStore({
   reducer: {
-    shipment,
+    bank,
     url,
     user,
   },

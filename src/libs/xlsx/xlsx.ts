@@ -1,5 +1,5 @@
 import xlsx, { IContent, IJsonSheet } from "json-as-xlsx";
-import { CoreData } from "src/store/apps/shipments";
+import { Bank } from "src/store/apps/bank";
 
 interface Column {
   label: string;
@@ -7,25 +7,14 @@ interface Column {
   format?: string;
 }
 
-type TranslatedFields = { [K in keyof CoreData]: string }
+type TranslatedFields = { [K in keyof Bank]?: string }
 
 const translatedFields: TranslatedFields = {
-  id: 'Código de envío',
-  buyer: 'Comprador',
-  address: 'Destino',
-  seller: 'Vendedor',
-  sellerAddress: 'Origen',
-  zipCode: 'Zip',
-  deliveryPreferences: 'Tipo de envío',
-  deliveryTime: 'Fecha estimada de envío',
-  destinationLatitude: 'Latitud',
-  destinationLongitude: 'Longitud',
   status: 'Estado',
-  order: 'Código de venta',
 } 
 
 class FileExporter {
-  formatData(data: CoreData[]): IJsonSheet[] {
+  formatData(data: Bank[]): IJsonSheet[] {
     const columns = this.createColumns(data);
     const content = this.createContent(data);
 
@@ -38,14 +27,11 @@ class FileExporter {
     return exportableData;
   }
 
-  private createColumns(data: CoreData[]) {
+  private createColumns(data: Bank[]) {
     const columns: Column[] = []
-
+  
     for(const key in data[0]) {
-      if(key === 'originLatitude') continue
-      if (key === 'originLongitude') continue
-      if (key === 'deliveryType') continue
-      const translatedKey = this.translateKeys(key as keyof CoreData)
+      const translatedKey = this.translateKeys(key as keyof Bank)
       columns.push({
         label: this.toUpperCaseFirstLetter(translatedKey),
         value: translatedKey,
@@ -55,19 +41,16 @@ class FileExporter {
     return columns
   }
 
-  private createContent(data: CoreData[]) {
+  private createContent(data: Bank[]) {
     const content: IContent[] = []
 
-    data.map((shipment) => {
+    data.map((bank) => {
       let translated: any = {}
-      for(const key in shipment) {
-        if(key === 'originLatitude') continue
-        if (key === 'originLongitude') continue
-        if (key === 'deliveryType') continue
-        const translatedKey = this.translateKeys(key as keyof CoreData)
+      for(const key in bank) {
+        const translatedKey = this.translateKeys(key as keyof Bank)
         translated = {
           ...translated,
-          [this.toUpperCaseFirstLetter(translatedKey)]: shipment[key as keyof CoreData]
+          [this.toUpperCaseFirstLetter(translatedKey)]: bank[key as keyof Bank]
         }
       }
       content.push(translated)
@@ -80,8 +63,8 @@ class FileExporter {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
-  private translateKeys (string: keyof CoreData): any {
-    return translatedFields[string] && translatedFields[string]
+  private translateKeys (string: keyof Bank): any {
+    return translatedFields[string] ? translatedFields[string] : string;
   }
 
   export(toExport: IJsonSheet[]) {

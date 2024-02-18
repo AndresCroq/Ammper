@@ -213,8 +213,7 @@ const ShipmentsDashboard = () => {
   // ** State
   const [accountCategory, setAccountCategory] = useState<string>('');
   const [isIncome, setIsIncome] = useState<string>('');
-
-  // const [category, setCategory] = useState<string>('');
+  const [category, setCategory] = useState<string>('');
   const [status, setStatus] = useState<string>('');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const apiRef = useGridApiRef();
@@ -249,6 +248,7 @@ const ShipmentsDashboard = () => {
     dispatch(filterData({
       limit: paginationModel.pageSize,
       skip: (paginationModel.pageSize * paginationModel.page),
+      ...(category.length && { category }),
       ...(accountCategory.length && { accountCategory }),
       ...(isIncome.length && { type: isIncome }),
       ...(status.length && { status }),
@@ -262,7 +262,7 @@ const ShipmentsDashboard = () => {
     setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
 
     // eslint-disable-next-line
-  }, [dispatch, accountCategory, isIncome, status, store.allData]);
+  }, [dispatch, accountCategory, category, isIncome, status, store.allData]);
 
   const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
     setIsIncome(e.target.value);
@@ -270,6 +270,10 @@ const ShipmentsDashboard = () => {
 
   const handleAccountCategory = useCallback((e: SelectChangeEvent) => {
     setAccountCategory(e.target.value);
+  }, []);
+
+  const handleCategoryChange = useCallback((e: SelectChangeEvent) => {
+    setCategory(e.target.value);
   }, []);
 
   const handleStatusChange = useCallback((e: SelectChangeEvent) => {
@@ -287,6 +291,7 @@ const ShipmentsDashboard = () => {
       },
       body: JSON.stringify({
         valueDate: '2024-01-1',
+        ...(category.length && { category }),
         ...(accountCategory.length && { accountCategory }),
         ...(isIncome.length && { type: isIncome }),
         ...(status.length && { status }),
@@ -315,6 +320,7 @@ const ShipmentsDashboard = () => {
         },
         body: JSON.stringify({
           valueDate: '2024-01-1',
+          ...(category.length && { category }),
           ...(accountCategory.length && { accountCategory }),
           ...(isIncome.length && { type: isIncome }),
           ...(status.length && { status }),
@@ -360,6 +366,27 @@ const ShipmentsDashboard = () => {
           />
           <CardContent>
             <Grid container spacing={6}>
+            <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='category-select'>Category</InputLabel>
+                  <Select
+                    fullWidth
+                    value={category}
+                    id='select-category'
+                    label='Select Category'
+                    labelId='Category-select'
+                    onChange={handleCategoryChange}
+                    inputProps={{ placeholder: 'Category' }}
+                  >
+                    <MenuItem value=''>All categories</MenuItem>
+                    {store?.filters?.category.map(status => (
+                      <MenuItem key={status} value={status}>
+                        {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
                   <InputLabel id='type-select'>Type</InputLabel>

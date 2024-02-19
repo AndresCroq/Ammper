@@ -447,17 +447,17 @@ const ShipmentsDashboard = () => {
             <Grid container spacing={6}>
             <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='category-select'>Category</InputLabel>
+                  <InputLabel id='category-select'>Categoría</InputLabel>
                   <Select
                     fullWidth
                     value={category[0]}
-                    id='select-category'
-                    label='Select Category'
-                    labelId='Category-select'
+                    id='select-categoria'
+                    label='Select Categoría'
+                    labelId='Categoria-select'
                     onChange={handleCategoryChange}
-                    inputProps={{ placeholder: 'Category' }}
+                    inputProps={{ placeholder: 'Categoría' }}
                   >
-                    <MenuItem value=''>All categories</MenuItem>
+                    <MenuItem value=''>Todas las categorías</MenuItem>
                     {store?.filters?.category.map(status => (
                       <MenuItem
                         style={{ backgroundColor: category.includes(status) ? 'orange' : 'inherit' }}
@@ -472,7 +472,7 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='merchant-select'>Merchant</InputLabel>
+                  <InputLabel id='merchant-select'>Negocio</InputLabel>
                   <Select
                     fullWidth
                     value={merchantName[0]}
@@ -480,9 +480,9 @@ const ShipmentsDashboard = () => {
                     label='Select Merchant'
                     labelId='Merchant-select'
                     onChange={handleMerchantNameChange}
-                    inputProps={{ placeholder: 'Merchant' }}
+                    inputProps={{ placeholder: 'Negocio' }}
                   >
-                    <MenuItem value=''>All merchants</MenuItem>
+                    <MenuItem value=''>Negocio</MenuItem>
                     {store?.filters?.merchantName.map(status => (
                       <MenuItem
                         style={{ backgroundColor: merchantName.includes(status) ? 'orange' : 'inherit' }}
@@ -496,7 +496,7 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='type-select'>Type</InputLabel>
+                  <InputLabel id='type-select'>Tipo</InputLabel>
                   <Select
                     fullWidth
                     value={isIncome}
@@ -504,9 +504,9 @@ const ShipmentsDashboard = () => {
                     label='Select Type'
                     labelId='Type-select'
                     onChange={handleIncomeChange}
-                    inputProps={{ placeholder: 'Type' }}
+                    inputProps={{ placeholder: 'Tipo' }}
                   >
-                    <MenuItem value=''>All types</MenuItem>
+                    <MenuItem value=''>Todos los tipos</MenuItem>
                     {store?.filters?.type.map(status => (
                       <MenuItem key={status} value={status}>
                         {status}
@@ -517,7 +517,7 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='category-select'>From Date</InputLabel>
+                  <InputLabel id='category-select'>Desde</InputLabel>
                   <Select
                     fullWidth
                     value={fromDate}
@@ -525,9 +525,9 @@ const ShipmentsDashboard = () => {
                     label='Select From Date'
                     labelId='from-date-select'
                     onChange={handleFromDateChange}
-                    inputProps={{ placeholder: 'From Date' }}
+                    inputProps={{ placeholder: 'Desde' }}
                   >
-                    <MenuItem value=''>From the beginning</MenuItem>
+                    <MenuItem value=''>Desde el inicio</MenuItem>
                     {store?.filters?.valueDate.map(cat => (
                       <MenuItem key={cat} value={cat}>
                         {cat}
@@ -538,7 +538,7 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='category-select'>To Date</InputLabel>
+                  <InputLabel id='category-select'>Hasta</InputLabel>
                   <Select
                     fullWidth
                     value={toDate}
@@ -546,9 +546,9 @@ const ShipmentsDashboard = () => {
                     label='Select To Date'
                     labelId='to-date-select'
                     onChange={handleToDateChange}
-                    inputProps={{ placeholder: 'To Date' }}
+                    inputProps={{ placeholder: 'Hasta' }}
                   >
-                    <MenuItem value=''>To current day</MenuItem>
+                    <MenuItem value=''>Hasta hoy</MenuItem>
                     {store?.filters?.valueDate.map(cat => (
                       <MenuItem key={cat} value={cat}>
                         {cat}
@@ -559,7 +559,7 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='category-select'>Account category</InputLabel>
+                  <InputLabel id='category-select'>Tipo de cuenta</InputLabel>
                   <Select
                     fullWidth
                     value={accountCategory}
@@ -567,9 +567,9 @@ const ShipmentsDashboard = () => {
                     label='Select Account Category'
                     labelId='account-category-select'
                     onChange={handleAccountCategory}
-                    inputProps={{ placeholder: 'Category' }}
+                    inputProps={{ placeholder: 'Tipo de cuenta' }}
                   >
-                    <MenuItem value=''>All categories</MenuItem>
+                    <MenuItem value=''>Todos los tipos</MenuItem>
                     {store?.filters?.accountCategory.map(cat => (
                       <MenuItem key={cat} value={cat}>
                         {cat}
@@ -580,7 +580,7 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='status-select'>Status</InputLabel>
+                  <InputLabel id='status-select'>Estado</InputLabel>
                   <Select
                     fullWidth
                     value={status}
@@ -590,7 +590,7 @@ const ShipmentsDashboard = () => {
                     onChange={handleStatusChange}
                     inputProps={{ placeholder: 'Estado' }}
                   >
-                    <MenuItem value=''>All status</MenuItem>
+                    <MenuItem value=''>Estado</MenuItem>
                     {store?.filters?.status.map(status => (
                       <MenuItem key={status} value={status}>
                         {status}
@@ -601,7 +601,7 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='status-select'>Graph by</InputLabel>
+                  <InputLabel id='status-select'>Graficar por</InputLabel>
                   <Select
                     fullWidth
                     value={sortBy}
@@ -609,10 +609,10 @@ const ShipmentsDashboard = () => {
                     label='Select Status'
                     labelId='status-select'
                     onChange={handleSortByChangeChange}
-                    inputProps={{ placeholder: 'Estado' }}
+                    inputProps={{ placeholder: 'Day' }}
                   >
-                    <MenuItem value='day'>Day</MenuItem>
-                    <MenuItem value='month'>Month</MenuItem>
+                    <MenuItem value='day'>Día</MenuItem>
+                    <MenuItem value='month'>Mes</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>

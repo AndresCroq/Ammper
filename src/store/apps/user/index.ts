@@ -63,7 +63,6 @@ export const appUsersSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder.addCase(fetchData.fulfilled, (state, action) => {
-      console.log(action)
       state.data = action.payload.users
       state.total = action.payload.total
       state.params = action.payload.params

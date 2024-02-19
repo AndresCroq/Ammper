@@ -50,6 +50,7 @@ const Chat = () => {
     let chatContainer = document.getElementById('messages-container')
     chatContainer.scrollTop = chatContainer.scrollHeight
   }, [messages.length])
+
   return (
     <div id='chatbot-container' className={styles.chatContainer}>
       <div className={`${styles.chatHeader}`}>

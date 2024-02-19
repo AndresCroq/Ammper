@@ -169,87 +169,17 @@ const LoginPage = () => {
           <BoxWrapper>
             <Box
               sx={{
-                top: 30,
-                left: 40,
+                top: 40,
+                left: 0,
                 display: 'flex',
                 position: 'absolute',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
             >
-              <svg width={47} fill='none' height={26} viewBox='0 0 268 150' xmlns='http://www.w3.org/2000/svg'>
-                <rect
-                  rx='25.1443'
-                  width='50.2886'
-                  height='143.953'
-                  fill={theme.palette.primary.main}
-                  transform='matrix(-0.865206 0.501417 0.498585 0.866841 195.571 0)'
-                />
-                <rect
-                  rx='25.1443'
-                  width='50.2886'
-                  height='143.953'
-                  fillOpacity='0.4'
-                  fill='url(#paint0_linear_7821_79167)'
-                  transform='matrix(-0.865206 0.501417 0.498585 0.866841 196.084 0)'
-                />
-                <rect
-                  rx='25.1443'
-                  width='50.2886'
-                  height='143.953'
-                  fill={theme.palette.primary.main}
-                  transform='matrix(0.865206 0.501417 -0.498585 0.866841 173.147 0)'
-                />
-                <rect
-                  rx='25.1443'
-                  width='50.2886'
-                  height='143.953'
-                  fill={theme.palette.primary.main}
-                  transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'
-                />
-                <rect
-                  rx='25.1443'
-                  width='50.2886'
-                  height='143.953'
-                  fillOpacity='0.4'
-                  fill='url(#paint1_linear_7821_79167)'
-                  transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'
-                />
-                <rect
-                  rx='25.1443'
-                  width='50.2886'
-                  height='143.953'
-                  fill={theme.palette.primary.main}
-                  transform='matrix(0.865206 0.501417 -0.498585 0.866841 71.7728 0)'
-                />
-                <defs>
-                  <linearGradient
-                    y1='0'
-                    x1='25.1443'
-                    x2='25.1443'
-                    y2='143.953'
-                    id='paint0_linear_7821_79167'
-                    gradientUnits='userSpaceOnUse'
-                  >
-                    <stop />
-                    <stop offset='1' stopOpacity='0' />
-                  </linearGradient>
-                  <linearGradient
-                    y1='0'
-                    x1='25.1443'
-                    x2='25.1443'
-                    y2='143.953'
-                    id='paint1_linear_7821_79167'
-                    gradientUnits='userSpaceOnUse'
-                  >
-                    <stop />
-                    <stop offset='1' stopOpacity='0' />
-                  </linearGradient>
-                </defs>
+              <svg width={310} fill='none' height={46} viewBox='0 0 268 150' xmlns='http://www.w3.org/5000/svg'>
+                <image xlinkHref='/images/logos/ammper-logo.png' height={178} fill='white' />
               </svg>
-              <Typography variant='h6' sx={{ ml: 2, lineHeight: 1, fontWeight: 700, fontSize: '1.5rem !important' }}>
-                {themeConfig.templateName}
-              </Typography>
             </Box>
             <Box sx={{ mb: 6 }}>
               <TypographyStyled variant='h5'>{`Welcome to Ammper! 👋🏻`}</TypographyStyled>
@@ -257,7 +187,7 @@ const LoginPage = () => {
             </Box>
             <Alert icon={false} sx={{ py: 3, mb: 6, ...bgColors.primaryLight, '& .MuiAlert-message': { p: 0 } }}>
               <Typography variant='caption' sx={{ mb: 2, display: 'block', color: 'primary.main' }}>
-                Admin: <strong>bank100</strong> / Pass: <strong>fullpass</strong>
+                Admin: <strong>bank100</strong> <br /> Pass: <strong>fullpass</strong>
               </Typography>
             </Alert>
             <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
@@ -340,7 +270,12 @@ const LoginPage = () => {
               </Button>
               <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
                 <Typography sx={{ mr: 2, color: 'text.secondary' }}>New on our platform?</Typography>
-                <Typography href='/register' component={Link} sx={{ color: 'primary.main', textDecoration: 'none' }}>
+                <Typography
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                  href='/'
+                  component={Link}
+                  sx={{ color: 'primary.main', textDecoration: 'none' }}
+                >
                   Create an account
                 </Typography>
               </Box>

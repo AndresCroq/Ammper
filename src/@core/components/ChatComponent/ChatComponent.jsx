@@ -33,7 +33,7 @@ const Chat = () => {
         },
         body: JSON.stringify(data)
       }
-      let response = await fetch('https://cruxy.holocruxe.com/questions?question=' + newMessage, options)
+      let response = await fetch('https://xegure.holocruxe.com/questions?question=' + newMessage, options)
 
       if (response.status == 200) {
         setMessages(prevMessages => prevMessages.filter(message => message.sender !== 'loading'))

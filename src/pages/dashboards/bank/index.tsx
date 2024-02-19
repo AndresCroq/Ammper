@@ -36,6 +36,7 @@ import { useDispatch } from 'react-redux';
 import { Bar } from 'src/types/bar';
 import { scatterSeries } from 'src/types';
 import { ScatterChart } from 'src/libs/high-charts';
+import { getDateThreeMonthsAgo } from 'src/utils/getDateThreeMonthsAgo';
 
 interface CellType {
   row: ResponseBank
@@ -213,6 +214,8 @@ const ShipmentsDashboard = () => {
   // ** State
   const [accountCategory, setAccountCategory] = useState<string>('');
   const [isIncome, setIsIncome] = useState<string>('');
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
   const [category, setCategory] = useState<string[]>([]);
   const [merchantName, setMerchantName] = useState<string[]>([]);
   const [status, setStatus] = useState<string>('');
@@ -249,6 +252,8 @@ const ShipmentsDashboard = () => {
     dispatch(filterData({
       limit: paginationModel.pageSize,
       skip: (paginationModel.pageSize * paginationModel.page),
+      ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+      ...(toDate.length && { toDate }),
       ...(category.length && { category }),
       ...(accountCategory.length && { accountCategory }),
       ...(merchantName.length && { merchantName }),
@@ -264,10 +269,18 @@ const ShipmentsDashboard = () => {
     setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
 
     // eslint-disable-next-line
-  }, [dispatch, accountCategory, merchantName, category, isIncome, status, store.allData]);
+  }, [dispatch, accountCategory, merchantName, fromDate, toDate, category, isIncome, status, store.allData]);
 
   const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
     setIsIncome(e.target.value);
+  }, []);
+
+  const handleFromDateChange = useCallback((e: SelectChangeEvent) => {
+    setFromDate(e.target.value);
+  }, []);
+
+  const handleToDateChange = useCallback((e: SelectChangeEvent) => {
+    setToDate(e.target.value);
   }, []);
 
   const handleAccountCategory = useCallback((e: SelectChangeEvent) => {
@@ -310,7 +323,8 @@ const ShipmentsDashboard = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        valueDate: '2024-01-1',
+        ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+        ...(toDate.length && { toDate }),
         ...(category.length && { category }),
         ...(accountCategory.length && { accountCategory }),
         ...(merchantName.length && { merchantName }),
@@ -340,7 +354,8 @@ const ShipmentsDashboard = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          valueDate: '2024-01-1',
+          ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+          ...(toDate.length && { toDate }),
           ...(category.length && { category }),
           ...(merchantName.length && { merchantName }),
           ...(accountCategory.length && { accountCategory }),
@@ -393,7 +408,7 @@ const ShipmentsDashboard = () => {
                   <InputLabel id='category-select'>Category</InputLabel>
                   <Select
                     fullWidth
-                    value={category}
+                    value={category[0]}
                     id='select-category'
                     label='Select Category'
                     labelId='Category-select'
@@ -402,7 +417,11 @@ const ShipmentsDashboard = () => {
                   >
                     <MenuItem value=''>All categories</MenuItem>
                     {store?.filters?.category.map(status => (
-                      <MenuItem key={status} value={status}>
+                      <MenuItem
+                        style={{ backgroundColor: category.includes(status) ? 'orange' : 'inherit' }}
+                        key={status}
+                        value={status}
+                      >
                         {status}
                       </MenuItem>
                     ))}
@@ -423,7 +442,10 @@ const ShipmentsDashboard = () => {
                   >
                     <MenuItem value=''>All merchants</MenuItem>
                     {store?.filters?.merchantName.map(status => (
-                      <MenuItem key={status} value={status}>
+                      <MenuItem
+                        style={{ backgroundColor: merchantName.includes(status) ? 'orange' : 'inherit' }}
+                        key={status} value={status}
+                      >
                         {status}
                       </MenuItem>
                     ))}
@@ -446,6 +468,48 @@ const ShipmentsDashboard = () => {
                     {store?.filters?.type.map(status => (
                       <MenuItem key={status} value={status}>
                         {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='category-select'>From Date</InputLabel>
+                  <Select
+                    fullWidth
+                    value={fromDate}
+                    id='select-from-date'
+                    label='Select From Date'
+                    labelId='from-date-select'
+                    onChange={handleFromDateChange}
+                    inputProps={{ placeholder: 'From Date' }}
+                  >
+                    <MenuItem value=''>From the beginning</MenuItem>
+                    {store?.filters?.valueDate.map(cat => (
+                      <MenuItem key={cat} value={cat}>
+                        {cat}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='category-select'>To Date</InputLabel>
+                  <Select
+                    fullWidth
+                    value={toDate}
+                    id='select-to-date'
+                    label='Select To Date'
+                    labelId='to-date-select'
+                    onChange={handleToDateChange}
+                    inputProps={{ placeholder: 'To Date' }}
+                  >
+                    <MenuItem value=''>To current day</MenuItem>
+                    {store?.filters?.valueDate.map(cat => (
+                      <MenuItem key={cat} value={cat}>
+                        {cat}
                       </MenuItem>
                     ))}
                   </Select>
@@ -550,10 +614,10 @@ const ShipmentsDashboard = () => {
         </Card>
       </Grid>
       <div style={{ width: '1300px' }}>
-        <HighchartsReact highcharts={Highcharts} options={{ ...chartOptions, chart: { ...size, type: 'bar' } }} />
-      </div>
-      <div style={{ width: '800px' }}>
         <HighchartsReact highcharts={Highcharts} options={{ ...scatterOptions }} />
+      </div>
+      <div style={{ width: '1300px' }}>
+        <HighchartsReact highcharts={Highcharts} options={{ ...chartOptions, chart: { ...size, type: 'bar' } }} />
       </div>
     </Grid>
   )

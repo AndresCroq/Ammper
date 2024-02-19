@@ -18,7 +18,7 @@ type BankFilters = {
   [K in keyof Bank]: string[];
 };
 
-type RequiredProps = 'status' | 'accountCategory' | 'type' | 'category' | 'merchantName'
+type RequiredProps = 'status' | 'accountCategory' | 'type' | 'category' | 'merchantName' | 'valueDate'
 
 type Filter = Pick<BankFilters, RequiredProps> & Partial<Omit<BankFilters, RequiredProps>>;
 
@@ -30,7 +30,9 @@ interface FilterWithPagination extends Partial<Omit<Bank, 'category' | 'merchant
   limit: number;
   skip: number;
   category?: string[];
-  merchantName?: string[]
+  merchantName?: string[];
+  fromDate?: string;
+  toDate?: string;
 }
 
 interface PostResponse {
@@ -107,6 +109,7 @@ export const appBanksSlice = createSlice({
       accountCategory: [],
       merchantName: [],
       balance: [],
+      valueDate: [],
       type: [],
       status: [],
       amount: []

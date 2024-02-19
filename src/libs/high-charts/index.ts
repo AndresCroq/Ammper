@@ -14,7 +14,8 @@ export const ScatterChart = (flow: string, series: scatterSeries) =>  {
       type: 'datetime',
       dateTimeLabelFormats: {
         day: '%Y-%m-%d'
-    },
+      },
+      tickInterval: 24 * 3600 * 1000,
       showLastLabel: true,
     },
     yAxis: {

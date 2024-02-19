@@ -1,4 +1,5 @@
 import { Line, ScatterSeries } from "src/types";
+import { formatDateFromNumber } from "src/utils/date-formats";
 
 export const lineChart = (averages: Line[]) => {  
   return {
@@ -6,10 +7,10 @@ export const lineChart = (averages: Line[]) => {
           type: 'line'
       },
       title: {
-          text: 'Mean, Median, and Mode'
+          text: 'Mean, Median, and Mode spendings per day'
       },
       xAxis: {
-          categories: averages.map(({date}) => new Date(date).toLocaleDateString())
+          categories: averages.map(({date}) => formatDateFromNumber(date))
       },
       yAxis: {
           title: {

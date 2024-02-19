@@ -36,7 +36,7 @@ import { useDispatch } from 'react-redux';
 import { Bar } from 'src/types/bar';
 import { Line, ScatterSeries } from 'src/types';
 import { lineChart, scatterChart } from 'src/libs/high-charts';
-import { getDateThreeMonthsAgo } from 'src/utils/getDateThreeMonthsAgo';
+import { getDateThreeMonthsAgo } from 'src/utils/date-formats';
 
 interface CellType {
   row: ResponseBank

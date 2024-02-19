@@ -32,11 +32,13 @@ import { fileExporter } from 'src/libs/xlsx/xlsx'
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
-import { useDispatch } from 'react-redux';
-import { Bar } from 'src/types/bar';
-import { Line, ScatterSeries } from 'src/types';
-import { lineChart, scatterChart } from 'src/libs/high-charts';
-import { getDateThreeMonthsAgo } from 'src/utils/date-formats';
+import { useDispatch } from 'react-redux'
+import { Bar } from 'src/types/bar'
+import { Line, ScatterSeries } from 'src/types'
+import { lineChart, scatterChart } from 'src/libs/high-charts'
+import { getDateThreeMonthsAgo } from 'src/utils/date-formats'
+import ChatBotIcon from 'src/@core/components/Chat-Icon/Chat-Icon'
+import Chat from 'src/@core/components/ChatComponent/ChatComponent'
 
 interface CellType {
   row: ResponseBank
@@ -207,78 +209,79 @@ const columns: GridColDef[] = [
         </Typography>
       )
     }
-  },
+  }
 ]
 
 const ShipmentsDashboard = () => {
   // ** State
-  const [accountCategory, setAccountCategory] = useState<string>('');
-  const [isIncome, setIsIncome] = useState<string>('');
-  const [fromDate, setFromDate] = useState<string>('');
-  const [sortBy, setSortBy] = useState<string>('');
-  const [toDate, setToDate] = useState<string>('');
-  const [category, setCategory] = useState<string[]>([]);
-  const [merchantName, setMerchantName] = useState<string[]>([]);
-  const [status, setStatus] = useState<string>('');
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
-  const apiRef = useGridApiRef();
+  const [accountCategory, setAccountCategory] = useState<string>('')
+  const [isIncome, setIsIncome] = useState<string>('')
+  const [fromDate, setFromDate] = useState<string>('')
+  const [sortBy, setSortBy] = useState<string>('')
+  const [toDate, setToDate] = useState<string>('')
+  const [category, setCategory] = useState<string[]>([])
+  const [merchantName, setMerchantName] = useState<string[]>([])
+  const [status, setStatus] = useState<string>('')
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
+  const apiRef = useGridApiRef()
   const [chartOptions, setChartOptions] = useState<object>({})
   const [scatterOptions, setScatterOptions] = useState<object>({})
   const [line, setLine] = useState<object>({})
   const [size, setSize] = useState<object>({ height: 0 })
-  
+
   // ** Hooks
-  const dispatch = useDispatch<AppDispatch>();
-  const store = useSelector((state: RootState) => state.bank);
-  const [rowCountState, setRowCountState] = useState(store.total || 0);
+  const dispatch = useDispatch<AppDispatch>()
+  const store = useSelector((state: RootState) => state.bank)
+  const [rowCountState, setRowCountState] = useState(store.total || 0)
 
   useEffect(() => {
-    setRowCountState((prevRowCountState) =>
-    store.total !== undefined ? store.total : prevRowCountState,
-    );
-  }, [store.total, setRowCountState]);
+    setRowCountState(prevRowCountState => (store.total !== undefined ? store.total : prevRowCountState))
+  }, [store.total, setRowCountState])
 
   useEffect(() => {
     // connectToServer(dispatch);
     dispatch(
       fetchData({
         limit: paginationModel.pageSize,
-        skip: (paginationModel.pageSize * paginationModel.page) + 1
+        skip: paginationModel.pageSize * paginationModel.page + 1
       })
-    );
+    )
 
     // eslint-disable-next-line
-  }, []);
-  
+  }, [])
+
   useEffect(() => {
-    dispatch(filterData({
-      limit: paginationModel.pageSize,
-      skip: (paginationModel.pageSize * paginationModel.page),
-      ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
-      ...(toDate.length && { toDate }),
-      ...(category.length && { category }),
-      ...(accountCategory.length && { accountCategory }),
-      ...(merchantName.length && { merchantName }),
-      ...(isIncome.length && { type: isIncome }),
-      ...(status.length && { status }),
-
-    }));
+    dispatch(
+      filterData({
+        limit: paginationModel.pageSize,
+        skip: paginationModel.pageSize * paginationModel.page,
+        ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+        ...(toDate.length && { toDate }),
+        ...(category.length && { category }),
+        ...(accountCategory.length && { accountCategory }),
+        ...(merchantName.length && { merchantName }),
+        ...(isIncome.length && { type: isIncome }),
+        ...(status.length && { status })
+      })
+    )
 
     // eslint-disable-next-line
-  }, [paginationModel, store.total]);
+  }, [paginationModel, store.total])
 
   useEffect(() => {
     setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
 
     // eslint-disable-next-line
-  }, [dispatch, accountCategory, merchantName, fromDate, toDate, category, isIncome, status, store.allData]);
+  }, [dispatch, accountCategory, merchantName, fromDate, toDate, category, isIncome, status, store.allData])
 
   useEffect(() => {
-    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&${sortBy === 'month' ? '&month=true' : '' }&limit=0&skip=0`
+    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&${
+      sortBy === 'month' ? '&month=true' : ''
+    }&limit=0&skip=0`
     fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
@@ -287,7 +290,7 @@ const ShipmentsDashboard = () => {
         ...(accountCategory.length && { accountCategory }),
         ...(merchantName.length && { merchantName }),
         ...(isIncome.length && { type: isIncome }),
-        ...(status.length && { status }),
+        ...(status.length && { status })
       })
     })
       .then(response => {
@@ -309,46 +312,50 @@ const ShipmentsDashboard = () => {
   }, [paginationModel, store.total, sortBy])
 
   useEffect(() => {
-    const scatterUrl = `${process.env.NEXT_PUBLIC_BACK}/bank?format=scatter&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
+    const scatterUrl = `${process.env.NEXT_PUBLIC_BACK}/bank?format=scatter&flow=${
+      isIncome.length ? isIncome : 'OUTFLOW'
+    }&limit=0&skip=0`
 
-      fetch(scatterUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
-          ...(toDate.length && { toDate }),
-          ...(category.length && { category }),
-          ...(merchantName.length && { merchantName }),
-          ...(accountCategory.length && { accountCategory }),
-          ...(isIncome.length && { type: isIncome }),
-          ...(status.length && { status }),
-        })
+    fetch(scatterUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+        ...(toDate.length && { toDate }),
+        ...(category.length && { category }),
+        ...(merchantName.length && { merchantName }),
+        ...(accountCategory.length && { accountCategory }),
+        ...(isIncome.length && { type: isIncome }),
+        ...(status.length && { status })
       })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok')
-          }
-  
-          return response.json()
-        })
-        .then((data: ScatterSeries) => {
-          setScatterOptions(scatterChart(isIncome, data))
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error)
-        })
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
 
-      // eslint-disable-next-line
+        return response.json()
+      })
+      .then((data: ScatterSeries) => {
+        setScatterOptions(scatterChart(isIncome, data))
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error)
+      })
+
+    // eslint-disable-next-line
   }, [paginationModel, store.total])
 
   useEffect(() => {
-    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=averages&${sortBy === 'month' ? '&month=true' : '' }&limit=0&skip=0`
+    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=averages&${
+      sortBy === 'month' ? '&month=true' : ''
+    }&limit=0&skip=0`
     fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
@@ -357,7 +364,7 @@ const ShipmentsDashboard = () => {
         ...(accountCategory.length && { accountCategory }),
         ...(merchantName.length && { merchantName }),
         ...(isIncome.length && { type: isIncome }),
-        ...(status.length && { status }),
+        ...(status.length && { status })
       })
     })
       .then(response => {
@@ -368,7 +375,7 @@ const ShipmentsDashboard = () => {
         return response.json()
       })
       .then((data: Line[]) => {
-        setLine(lineChart(data));
+        setLine(lineChart(data))
       })
       .catch(error => {
         console.error('Error fetching data:', error)
@@ -377,66 +384,68 @@ const ShipmentsDashboard = () => {
   }, [paginationModel, store.total, sortBy])
 
   const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
-    setIsIncome(e.target.value);
-  }, []);
+    setIsIncome(e.target.value)
+  }, [])
 
   const handleFromDateChange = useCallback((e: SelectChangeEvent) => {
-    setFromDate(e.target.value);
-  }, []);
+    setFromDate(e.target.value)
+  }, [])
 
   const handleToDateChange = useCallback((e: SelectChangeEvent) => {
-    setToDate(e.target.value);
-  }, []);
+    setToDate(e.target.value)
+  }, [])
 
   const handleAccountCategory = useCallback((e: SelectChangeEvent) => {
-    setAccountCategory(e.target.value);
-  }, []);
+    setAccountCategory(e.target.value)
+  }, [])
 
   const handleMerchantNameChange = useCallback((e: SelectChangeEvent) => {
-    setMerchantName((prev) => {
-      if(!e.target.value.length) return []
-      if(prev.includes(e.target.value)) {
-        return prev.filter((elm) => elm !== e.target.value)
+    setMerchantName(prev => {
+      if (!e.target.value.length) return []
+      if (prev.includes(e.target.value)) {
+        return prev.filter(elm => elm !== e.target.value)
       }
-      
+
       return [...prev, e.target.value]
-    });
-  }, []);
+    })
+  }, [])
 
   const handleCategoryChange = useCallback((e: SelectChangeEvent) => {
-    setCategory((prev) => {
-      if(!e.target.value.length) return []
-      if(prev.includes(e.target.value)) {
-        return prev.filter((elm) => elm !== e.target.value)
+    setCategory(prev => {
+      if (!e.target.value.length) return []
+      if (prev.includes(e.target.value)) {
+        return prev.filter(elm => elm !== e.target.value)
       }
-      
+
       return [...prev, e.target.value]
-    });
-  }, []);
+    })
+  }, [])
 
   const handleStatusChange = useCallback((e: SelectChangeEvent) => {
-    setStatus(e.target.value);
-  }, []);
+    setStatus(e.target.value)
+  }, [])
 
   const handleSortByChangeChange = useCallback((e: SelectChangeEvent) => {
-    setSortBy(e.target.value);
-  }, []);
+    setSortBy(e.target.value)
+  }, [])
 
   const onClick = (e: MouseEvent) => {
-    e.preventDefault();
-    const selectedRows = apiRef.current.getSelectedRows() as unknown as Bank[];
-    const toExport: Bank[] = [];
+    e.preventDefault()
+    const selectedRows = apiRef.current.getSelectedRows() as unknown as Bank[]
+    const toExport: Bank[] = []
 
-    selectedRows.forEach((row) => toExport.push(row));
-    if (!toExport.length) return;
+    selectedRows.forEach(row => toExport.push(row))
+    if (!toExport.length) return
 
-    const formattedData = fileExporter.formatData(toExport);
+    const formattedData = fileExporter.formatData(toExport)
 
-    fileExporter.export(formattedData);
-  };
+    fileExporter.export(formattedData)
+  }
 
   return (
     <Grid container style={{ justifyContent: 'center', gap: '30px' }} spacing={6}>
+      <ChatBotIcon></ChatBotIcon>
+      <Chat></Chat>
       <Grid item xs={12}>
         <Card>
           <CardHeader
@@ -445,7 +454,7 @@ const ShipmentsDashboard = () => {
           />
           <CardContent>
             <Grid container spacing={6}>
-            <Grid item sm={4} xs={12}>
+              <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
                   <InputLabel id='category-select'>Categoría</InputLabel>
                   <Select
@@ -486,7 +495,8 @@ const ShipmentsDashboard = () => {
                     {store?.filters?.merchantName.map(status => (
                       <MenuItem
                         style={{ backgroundColor: merchantName.includes(status) ? 'orange' : 'inherit' }}
-                        key={status} value={status}
+                        key={status}
+                        value={status}
                       >
                         {status}
                       </MenuItem>
@@ -631,8 +641,8 @@ const ShipmentsDashboard = () => {
               onClick={e => onClick(e)}
               sx={{
                 marginLeft: 4,
-                backgroundColor: 'primary.main',
-                color: '#FFF',
+                backgroundColor: '#2B2B2B',
+                color: '#fffff',
                 mb: 2
               }}
             >

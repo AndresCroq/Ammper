@@ -4,7 +4,7 @@ import { Skin } from 'src/@core/layouts/types'
 
 const DefaultPalette = (mode: Palette['mode'], skin: Skin): Palette => {
   // ** Vars
-  const whiteColor = '#ffd6a4'
+  const whiteColor = '#ED4036'
   const lightColor = '76, 78, 100'
   const darkColor = '255, 255, 255'
   const mainColor = mode === 'light' ? lightColor : darkColor
@@ -41,8 +41,8 @@ const DefaultPalette = (mode: Palette['mode'], skin: Skin): Palette => {
     },
     primary: {
       light: '#ffb959',
-      main: '#ee8200',
-      dark: '#5A5FE0',
+      main: '#ffff',
+      dark: '#2B2B2B',
       contrastText: whiteColor
     },
     secondary: {
@@ -98,7 +98,7 @@ const DefaultPalette = (mode: Palette['mode'], skin: Skin): Palette => {
     },
     divider: `rgba(${mainColor}, 0.12)`,
     background: {
-      paper: mode === 'light' ? whiteColor : '#bf590e',
+      paper: mode === 'light' ? whiteColor : '#ED4036',
       default: defaultBgColor()
     },
     action: {

@@ -1,6 +1,6 @@
-export type ScatterVector = [string, number];
+export type ScatterVector = [number, number];
 
-export interface scatterSeries {
+export interface ScatterSeries {
   name: string;
   id: string;
   marker: {

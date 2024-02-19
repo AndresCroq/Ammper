@@ -1,6 +1,48 @@
-import { scatterSeries } from "src/types";
+import { Line, ScatterSeries } from "src/types";
+import { formatDateFromNumber } from "src/utils/date-formats";
 
-export const ScatterChart = (flow: string, series: scatterSeries) =>  {  
+export const lineChart = (averages: Line[]) => {  
+  return {
+      chart: {
+          type: 'line'
+      },
+      title: {
+          text: 'Mean, Median, and Mode spendings per day'
+      },
+      xAxis: {
+          categories: averages.map(({date}) => formatDateFromNumber(date))
+      },
+      yAxis: {
+          title: {
+              text: 'Values'
+          }
+      },
+      series: [{
+          name: 'Mean',
+          data: averages.map((e) => e.mean),
+          marker: {
+              symbol: 'circle',
+              radius: 6
+          }
+      }, {
+          name: 'Median',
+          data: averages.map((e) => e.median),
+          marker: {
+              symbol: 'diamond',
+              radius: 6
+          }
+      }, {
+          name: 'Mode',
+          data: averages.map((e) => e.mode),
+          marker: {
+              symbol: 'square',
+              radius: 6
+          }
+      }]
+  }
+}
+
+export const scatterChart = (flow: string, series: ScatterSeries) =>  {  
   return {
     chart: {
       type: 'scatter',

@@ -34,8 +34,8 @@ import HighchartsReact from 'highcharts-react-official'
 
 import { useDispatch } from 'react-redux';
 import { Bar } from 'src/types/bar';
-import { scatterSeries } from 'src/types';
-import { ScatterChart } from 'src/libs/high-charts';
+import { Line, ScatterSeries } from 'src/types';
+import { lineChart, scatterChart } from 'src/libs/high-charts';
 import { getDateThreeMonthsAgo } from 'src/utils/getDateThreeMonthsAgo';
 
 interface CellType {
@@ -224,6 +224,7 @@ const ShipmentsDashboard = () => {
   const apiRef = useGridApiRef();
   const [chartOptions, setChartOptions] = useState<object>({})
   const [scatterOptions, setScatterOptions] = useState<object>({})
+  const [line, setLine] = useState<object>({})
   const [size, setSize] = useState<object>({ height: 0 })
   
   // ** Hooks
@@ -271,52 +272,6 @@ const ShipmentsDashboard = () => {
 
     // eslint-disable-next-line
   }, [dispatch, accountCategory, merchantName, fromDate, toDate, category, isIncome, status, store.allData]);
-
-  const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
-    setIsIncome(e.target.value);
-  }, []);
-
-  const handleFromDateChange = useCallback((e: SelectChangeEvent) => {
-    setFromDate(e.target.value);
-  }, []);
-
-  const handleToDateChange = useCallback((e: SelectChangeEvent) => {
-    setToDate(e.target.value);
-  }, []);
-
-  const handleAccountCategory = useCallback((e: SelectChangeEvent) => {
-    setAccountCategory(e.target.value);
-  }, []);
-
-  const handleMerchantNameChange = useCallback((e: SelectChangeEvent) => {
-    setMerchantName((prev) => {
-      if(!e.target.value.length) return []
-      if(prev.includes(e.target.value)) {
-        return prev.filter((elm) => elm !== e.target.value)
-      }
-      
-      return [...prev, e.target.value]
-    });
-  }, []);
-
-  const handleCategoryChange = useCallback((e: SelectChangeEvent) => {
-    setCategory((prev) => {
-      if(!e.target.value.length) return []
-      if(prev.includes(e.target.value)) {
-        return prev.filter((elm) => elm !== e.target.value)
-      }
-      
-      return [...prev, e.target.value]
-    });
-  }, []);
-
-  const handleStatusChange = useCallback((e: SelectChangeEvent) => {
-    setStatus(e.target.value);
-  }, []);
-
-  const handleSortByChangeChange = useCallback((e: SelectChangeEvent) => {
-    setSortBy(e.target.value);
-  }, []);
 
   useEffect(() => {
     const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&${sortBy === 'month' ? '&month=true' : '' }&limit=0&skip=0`
@@ -378,8 +333,8 @@ const ShipmentsDashboard = () => {
   
           return response.json()
         })
-        .then((data: scatterSeries) => {
-          setScatterOptions(ScatterChart(isIncome, data))
+        .then((data: ScatterSeries) => {
+          setScatterOptions(scatterChart(isIncome, data))
         })
         .catch(error => {
           console.error('Error fetching data:', error)
@@ -387,6 +342,85 @@ const ShipmentsDashboard = () => {
 
       // eslint-disable-next-line
   }, [paginationModel, store.total])
+
+  useEffect(() => {
+    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=averages&${sortBy === 'month' ? '&month=true' : '' }&limit=0&skip=0`
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+        ...(toDate.length && { toDate }),
+        ...(category.length && { category }),
+        ...(accountCategory.length && { accountCategory }),
+        ...(merchantName.length && { merchantName }),
+        ...(isIncome.length && { type: isIncome }),
+        ...(status.length && { status }),
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+
+        return response.json()
+      })
+      .then((data: Line[]) => {
+        setLine(lineChart(data));
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error)
+      })
+    // eslint-disable-next-line
+  }, [paginationModel, store.total, sortBy])
+
+  const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
+    setIsIncome(e.target.value);
+  }, []);
+
+  const handleFromDateChange = useCallback((e: SelectChangeEvent) => {
+    setFromDate(e.target.value);
+  }, []);
+
+  const handleToDateChange = useCallback((e: SelectChangeEvent) => {
+    setToDate(e.target.value);
+  }, []);
+
+  const handleAccountCategory = useCallback((e: SelectChangeEvent) => {
+    setAccountCategory(e.target.value);
+  }, []);
+
+  const handleMerchantNameChange = useCallback((e: SelectChangeEvent) => {
+    setMerchantName((prev) => {
+      if(!e.target.value.length) return []
+      if(prev.includes(e.target.value)) {
+        return prev.filter((elm) => elm !== e.target.value)
+      }
+      
+      return [...prev, e.target.value]
+    });
+  }, []);
+
+  const handleCategoryChange = useCallback((e: SelectChangeEvent) => {
+    setCategory((prev) => {
+      if(!e.target.value.length) return []
+      if(prev.includes(e.target.value)) {
+        return prev.filter((elm) => elm !== e.target.value)
+      }
+      
+      return [...prev, e.target.value]
+    });
+  }, []);
+
+  const handleStatusChange = useCallback((e: SelectChangeEvent) => {
+    setStatus(e.target.value);
+  }, []);
+
+  const handleSortByChangeChange = useCallback((e: SelectChangeEvent) => {
+    setSortBy(e.target.value);
+  }, []);
 
   const onClick = (e: MouseEvent) => {
     e.preventDefault();
@@ -638,6 +672,9 @@ const ShipmentsDashboard = () => {
           />
         </Card>
       </Grid>
+      <div style={{ width: '1300px' }}>
+        <HighchartsReact highcharts={Highcharts} options={{ ...line }} />
+      </div>
       <div style={{ width: '1300px' }}>
         <HighchartsReact highcharts={Highcharts} options={{ ...scatterOptions }} />
       </div>

@@ -7,7 +7,7 @@ export const lineChart = (averages: Line[]) => {
           type: 'line'
       },
       title: {
-          text: 'Mean, Median, and Mode spendings per day'
+          text: 'Media, mediana y moda de gastos'
       },
       xAxis: {
           categories: averages.map(({date}) => formatDateFromNumber(date))
@@ -49,7 +49,7 @@ export const scatterChart = (flow: string, series: ScatterSeries) =>  {
       zoomType: 'xy',
     },
     title: {
-      text: `${flow.length  ? flow : 'Incomes and expenses' }`,
+      text: `${flow.length  ? flow : 'Gastos e ingresos' }`,
       align: 'left',
     },
     xAxis: {
@@ -61,7 +61,7 @@ export const scatterChart = (flow: string, series: ScatterSeries) =>  {
     },
     yAxis: {
       title: {
-        text: `${flow.length  ? flow : 'Incomes and expenses' }`,
+        text: `${flow.length  ? flow : 'Gastos e ingresos' }`,
       },
       labels: {
         format: '$ {value}',
@@ -96,7 +96,7 @@ export const scatterChart = (flow: string, series: ScatterSeries) =>  {
     },
     tooltip: {
       xDateFormat: '%Y-%m-%d',
-      pointFormat: 'Date: {point.x:%Y-%m-%d}, Amount: {point.y}'
+      pointFormat: 'Fecha: {point.x:%Y-%m-%d}, Cantidad: {point.y}'
   },
     series,
   }

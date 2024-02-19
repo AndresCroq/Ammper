@@ -33,7 +33,10 @@ import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
 import { useDispatch } from 'react-redux';
-import { Bar } from 'src/typesBar/bar';
+import { Bar } from 'src/types/bar';
+import { scatterSeries } from 'src/types';
+import { ScatterChart } from 'src/libs/high-charts';
+import { getDateThreeMonthsAgo } from 'src/utils/getDateThreeMonthsAgo';
 
 interface CellType {
   row: ResponseBank
@@ -211,12 +214,15 @@ const ShipmentsDashboard = () => {
   // ** State
   const [accountCategory, setAccountCategory] = useState<string>('');
   const [isIncome, setIsIncome] = useState<string>('');
-
-  // const [category, setCategory] = useState<string>('');
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
+  const [category, setCategory] = useState<string[]>([]);
+  const [merchantName, setMerchantName] = useState<string[]>([]);
   const [status, setStatus] = useState<string>('');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const apiRef = useGridApiRef();
   const [chartOptions, setChartOptions] = useState<object>({})
+  const [scatterOptions, setScatterOptions] = useState<object>({})
   const [size, setSize] = useState<object>({ height: 0 })
   
   // ** Hooks
@@ -246,7 +252,11 @@ const ShipmentsDashboard = () => {
     dispatch(filterData({
       limit: paginationModel.pageSize,
       skip: (paginationModel.pageSize * paginationModel.page),
+      ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+      ...(toDate.length && { toDate }),
+      ...(category.length && { category }),
       ...(accountCategory.length && { accountCategory }),
+      ...(merchantName.length && { merchantName }),
       ...(isIncome.length && { type: isIncome }),
       ...(status.length && { status }),
 
@@ -259,14 +269,44 @@ const ShipmentsDashboard = () => {
     setPaginationModel({ pageSize: paginationModel.pageSize, page: 0 })
 
     // eslint-disable-next-line
-  }, [dispatch, accountCategory, isIncome, status, store.allData]);
+  }, [dispatch, accountCategory, merchantName, fromDate, toDate, category, isIncome, status, store.allData]);
 
   const handleIncomeChange = useCallback((e: SelectChangeEvent) => {
     setIsIncome(e.target.value);
   }, []);
 
+  const handleFromDateChange = useCallback((e: SelectChangeEvent) => {
+    setFromDate(e.target.value);
+  }, []);
+
+  const handleToDateChange = useCallback((e: SelectChangeEvent) => {
+    setToDate(e.target.value);
+  }, []);
+
   const handleAccountCategory = useCallback((e: SelectChangeEvent) => {
     setAccountCategory(e.target.value);
+  }, []);
+
+  const handleMerchantNameChange = useCallback((e: SelectChangeEvent) => {
+    setMerchantName((prev) => {
+      if(!e.target.value.length) return []
+      if(prev.includes(e.target.value)) {
+        return prev.filter((elm) => elm !== e.target.value)
+      }
+      
+      return [...prev, e.target.value]
+    });
+  }, []);
+
+  const handleCategoryChange = useCallback((e: SelectChangeEvent) => {
+    setCategory((prev) => {
+      if(!e.target.value.length) return []
+      if(prev.includes(e.target.value)) {
+        return prev.filter((elm) => elm !== e.target.value)
+      }
+      
+      return [...prev, e.target.value]
+    });
   }, []);
 
   const handleStatusChange = useCallback((e: SelectChangeEvent) => {
@@ -275,6 +315,7 @@ const ShipmentsDashboard = () => {
 
   useEffect(() => {
     const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
+    const scatterUrl = `${process.env.NEXT_PUBLIC_BACK}/bank?format=scatter&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
 
     fetch(url, {
       method: 'POST',
@@ -282,8 +323,11 @@ const ShipmentsDashboard = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        valueDate: '2024-01-1',
+        ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+        ...(toDate.length && { toDate }),
+        ...(category.length && { category }),
         ...(accountCategory.length && { accountCategory }),
+        ...(merchantName.length && { merchantName }),
         ...(isIncome.length && { type: isIncome }),
         ...(status.length && { status }),
       })
@@ -303,6 +347,35 @@ const ShipmentsDashboard = () => {
       .catch(error => {
         console.error('Error fetching data:', error)
       })
+
+      fetch(scatterUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...(fromDate.length ? { fromDate } : { fromDate: getDateThreeMonthsAgo() }),
+          ...(toDate.length && { toDate }),
+          ...(category.length && { category }),
+          ...(merchantName.length && { merchantName }),
+          ...(accountCategory.length && { accountCategory }),
+          ...(isIncome.length && { type: isIncome }),
+          ...(status.length && { status }),
+        })
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok')
+          }
+  
+          return response.json()
+        })
+        .then((data: scatterSeries) => {
+          setScatterOptions(ScatterChart(isIncome, data))
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error)
+        })
 
       // eslint-disable-next-line
   }, [paginationModel, store.total])
@@ -330,6 +403,55 @@ const ShipmentsDashboard = () => {
           />
           <CardContent>
             <Grid container spacing={6}>
+            <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='category-select'>Category</InputLabel>
+                  <Select
+                    fullWidth
+                    value={category[0]}
+                    id='select-category'
+                    label='Select Category'
+                    labelId='Category-select'
+                    onChange={handleCategoryChange}
+                    inputProps={{ placeholder: 'Category' }}
+                  >
+                    <MenuItem value=''>All categories</MenuItem>
+                    {store?.filters?.category.map(status => (
+                      <MenuItem
+                        style={{ backgroundColor: category.includes(status) ? 'orange' : 'inherit' }}
+                        key={status}
+                        value={status}
+                      >
+                        {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='merchant-select'>Merchant</InputLabel>
+                  <Select
+                    fullWidth
+                    value={merchantName[0]}
+                    id='select-merchant'
+                    label='Select Merchant'
+                    labelId='Merchant-select'
+                    onChange={handleMerchantNameChange}
+                    inputProps={{ placeholder: 'Merchant' }}
+                  >
+                    <MenuItem value=''>All merchants</MenuItem>
+                    {store?.filters?.merchantName.map(status => (
+                      <MenuItem
+                        style={{ backgroundColor: merchantName.includes(status) ? 'orange' : 'inherit' }}
+                        key={status} value={status}
+                      >
+                        {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
                   <InputLabel id='type-select'>Type</InputLabel>
@@ -346,6 +468,48 @@ const ShipmentsDashboard = () => {
                     {store?.filters?.type.map(status => (
                       <MenuItem key={status} value={status}>
                         {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='category-select'>From Date</InputLabel>
+                  <Select
+                    fullWidth
+                    value={fromDate}
+                    id='select-from-date'
+                    label='Select From Date'
+                    labelId='from-date-select'
+                    onChange={handleFromDateChange}
+                    inputProps={{ placeholder: 'From Date' }}
+                  >
+                    <MenuItem value=''>From the beginning</MenuItem>
+                    {store?.filters?.valueDate.map(cat => (
+                      <MenuItem key={cat} value={cat}>
+                        {cat}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='category-select'>To Date</InputLabel>
+                  <Select
+                    fullWidth
+                    value={toDate}
+                    id='select-to-date'
+                    label='Select To Date'
+                    labelId='to-date-select'
+                    onChange={handleToDateChange}
+                    inputProps={{ placeholder: 'To Date' }}
+                  >
+                    <MenuItem value=''>To current day</MenuItem>
+                    {store?.filters?.valueDate.map(cat => (
+                      <MenuItem key={cat} value={cat}>
+                        {cat}
                       </MenuItem>
                     ))}
                   </Select>
@@ -449,6 +613,9 @@ const ShipmentsDashboard = () => {
           />
         </Card>
       </Grid>
+      <div style={{ width: '1300px' }}>
+        <HighchartsReact highcharts={Highcharts} options={{ ...scatterOptions }} />
+      </div>
       <div style={{ width: '1300px' }}>
         <HighchartsReact highcharts={Highcharts} options={{ ...chartOptions, chart: { ...size, type: 'bar' } }} />
       </div>

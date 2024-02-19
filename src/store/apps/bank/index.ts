@@ -18,7 +18,7 @@ type BankFilters = {
   [K in keyof Bank]: string[];
 };
 
-type RequiredProps = 'status' | 'accountCategory' | 'type'
+type RequiredProps = 'status' | 'accountCategory' | 'type' | 'category' | 'merchantName' | 'valueDate'
 
 type Filter = Pick<BankFilters, RequiredProps> & Partial<Omit<BankFilters, RequiredProps>>;
 
@@ -26,9 +26,19 @@ export interface ResponseBank extends Bank {
   id: string
 }
 
-interface FilterWithPagination extends Partial<Bank> {
+interface FilterWithPagination extends Partial<Omit<Bank, 'category' | 'merchantName'>> {
   limit: number;
   skip: number;
+  category?: string[];
+  merchantName?: string[];
+  fromDate?: string;
+  toDate?: string;
+}
+
+interface PostResponse {
+  banks: Bank[]
+  count: number,
+  filters: Filter
 }
 
 interface BankReducer {
@@ -42,22 +52,15 @@ interface BankReducer {
 // ** Fetch Users
 export const fetchData = createAsyncThunk('appBank/fetchData', async ({ limit, skip }: { limit: number, skip: number }) => {
   try {
-    const { data } = await axios.post<{ banks: Bank[], count: number }>(`${process.env.NEXT_PUBLIC_BACK}/bank?format=table&limit=${limit}&skip=${skip}`)
+    const { data } = await axios.post<PostResponse>(`${process.env.NEXT_PUBLIC_BACK}/bank?format=table&limit=${limit}&skip=${skip}`)
 
     const banksWithId: ResponseBank[] = data.banks.map((e) => ({ id: e._id, ...e }));
-
-
-    const filters: Filter = {
-      accountCategory: ['CREDIT_CARD', 'LOAN_ACCOUNT', 'CHECKING_ACCOUNT'],
-      status: ['PENDING', 'PROCESSED'],
-      type: ['INFLOW', 'OUTFLOW'],
-    }
 
     const dispatchableData = {
       allData: { coreData: banksWithId },
       banks: { coreData: banksWithId },
       total: data.count,
-      filters: filters as Filter
+      filters: data.filters
     }
     
     return dispatchableData as any;
@@ -79,7 +82,7 @@ export const filterData = createAsyncThunk('appBank/filterData', async (
   { limit, skip, ...filters }: FilterWithPagination
 ) => {
   try {
-    const { data } = await axios.post<{ banks: Bank[], count: number }>(`${process.env.NEXT_PUBLIC_BACK}/bank?format=table&limit=${limit}&skip=${skip}`, filters)
+    const { data } = await axios.post<PostResponse>(`${process.env.NEXT_PUBLIC_BACK}/bank?format=table&limit=${limit}&skip=${skip}`, filters)
 
     const banksWithId: ResponseBank[] = data.banks.map((e) => ({ id: e._id, ...e }));
 
@@ -101,7 +104,16 @@ export const appBanksSlice = createSlice({
     total: 1,
     params: {},
     allData: [],
-    filters: { category: [], accountCategory: [], balance: [], type: [], status: [], amount: [] }
+    filters: {
+      category: [],
+      accountCategory: [],
+      merchantName: [],
+      balance: [],
+      valueDate: [],
+      type: [],
+      status: [],
+      amount: []
+    }
   } as BankReducer,
   reducers: {},
   extraReducers: builder => {

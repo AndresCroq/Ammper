@@ -215,6 +215,7 @@ const ShipmentsDashboard = () => {
   const [accountCategory, setAccountCategory] = useState<string>('');
   const [isIncome, setIsIncome] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [category, setCategory] = useState<string[]>([]);
   const [merchantName, setMerchantName] = useState<string[]>([]);
@@ -313,10 +314,12 @@ const ShipmentsDashboard = () => {
     setStatus(e.target.value);
   }, []);
 
-  useEffect(() => {
-    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
-    const scatterUrl = `${process.env.NEXT_PUBLIC_BACK}/bank?format=scatter&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
+  const handleSortByChangeChange = useCallback((e: SelectChangeEvent) => {
+    setSortBy(e.target.value);
+  }, []);
 
+  useEffect(() => {
+    const url = `${process.env.NEXT_PUBLIC_BACK}/bank?format=bar&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&${sortBy === 'month' ? '&month=true' : '' }&limit=0&skip=0`
     fetch(url, {
       method: 'POST',
       headers: {
@@ -347,6 +350,11 @@ const ShipmentsDashboard = () => {
       .catch(error => {
         console.error('Error fetching data:', error)
       })
+    // eslint-disable-next-line
+  }, [paginationModel, store.total, sortBy])
+
+  useEffect(() => {
+    const scatterUrl = `${process.env.NEXT_PUBLIC_BACK}/bank?format=scatter&flow=${isIncome.length ? isIncome : 'OUTFLOW'}&limit=0&skip=0`
 
       fetch(scatterUrl, {
         method: 'POST',
@@ -538,7 +546,7 @@ const ShipmentsDashboard = () => {
               </Grid>
               <Grid item sm={4} xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel id='status-select'>Estado</InputLabel>
+                  <InputLabel id='status-select'>Status</InputLabel>
                   <Select
                     fullWidth
                     value={status}
@@ -548,12 +556,29 @@ const ShipmentsDashboard = () => {
                     onChange={handleStatusChange}
                     inputProps={{ placeholder: 'Estado' }}
                   >
-                    <MenuItem value=''>Todos los estados</MenuItem>
+                    <MenuItem value=''>All status</MenuItem>
                     {store?.filters?.status.map(status => (
                       <MenuItem key={status} value={status}>
                         {status}
                       </MenuItem>
                     ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id='status-select'>Graph by</InputLabel>
+                  <Select
+                    fullWidth
+                    value={sortBy}
+                    id='select-status'
+                    label='Select Status'
+                    labelId='status-select'
+                    onChange={handleSortByChangeChange}
+                    inputProps={{ placeholder: 'Estado' }}
+                  >
+                    <MenuItem value='day'>Day</MenuItem>
+                    <MenuItem value='month'>Month</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
